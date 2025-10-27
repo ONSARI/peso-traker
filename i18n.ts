@@ -77,11 +77,6 @@ const translationEN = {
     "height": "Height",
     "bmiLabel": "Your BMI",
     "notAvailable": "N/A",
-    "goalWeight": "Goal Weight",
-    "setGoal": "Set Goal",
-    "goalReached": "Goal Reached! 🎉",
-    "toLose": "to lose",
-    "toGain": "to gain",
     "underweight": "Underweight",
     "normal": "Normal weight",
     "overweight": "Overweight",
@@ -89,6 +84,16 @@ const translationEN = {
     "obesity2": "Obesity Grade II",
     "obesity3": "Obesity Grade III",
     "improvementNeeded": "Lose <1>{{weight}}</1> to reach the <3>{{category}}</3> category.",
+    "goals": {
+      "title": "Your Goals",
+      "goal1": "First Goal",
+      "goal2": "Second Goal",
+      "finalGoal": "Final Goal",
+      "set": "Set",
+      "edit": "Edit",
+      "allGoalsReached": "All goals achieved! Congratulations! 🥳",
+      "toGo": "to reach your next goal"
+    },
     "goalProgress": {
       "title": "Goal Progress",
       "progressComplete": "{{percentage}}% Complete",
@@ -161,7 +166,7 @@ const translationEN = {
     },
     "goalReached": {
       "title": "Goal Smasher!",
-      "description": "You've reached your target weight. Congratulations!"
+      "description": "You've reached your final target weight. Congratulations!"
     }
   }
 };
@@ -238,11 +243,6 @@ const translationES = {
     "height": "Altura",
     "bmiLabel": "Tu IMC",
     "notAvailable": "N/A",
-    "goalWeight": "Peso Objetivo",
-    "setGoal": "Establecer Objetivo",
-    "goalReached": "¡Objetivo Alcanzado! 🎉",
-    "toLose": "por perder",
-    "toGain": "por ganar",
     "underweight": "Bajo peso",
     "normal": "Peso normal",
     "overweight": "Sobrepeso",
@@ -250,6 +250,16 @@ const translationES = {
     "obesity2": "Obesidad Grado II",
     "obesity3": "Obesidad Grado III",
     "improvementNeeded": "Pierde <1>{{weight}}</1> para alcanzar la categoría de <3>{{category}}</3>.",
+    "goals": {
+      "title": "Tus Objetivos",
+      "goal1": "Primer Objetivo",
+      "goal2": "Segundo Objetivo",
+      "finalGoal": "Meta Final",
+      "set": "Fijar",
+      "edit": "Editar",
+      "allGoalsReached": "¡Todos los objetivos cumplidos! ¡Felicidades! 🥳",
+      "toGo": "para alcanzar tu próximo objetivo"
+    },
     "goalProgress": {
       "title": "Progreso Hacia la Meta",
       "progressComplete": "{{percentage}}% Completado",
@@ -322,7 +332,7 @@ const translationES = {
     },
     "goalReached": {
       "title": "¡Meta Cumplida!",
-      "description": "Has alcanzado tu peso objetivo. ¡Felicidades!"
+      "description": "Has alcanzado tu meta final de peso. ¡Felicidades!"
     }
   }
 };
@@ -399,11 +409,6 @@ const translationPT = {
     "height": "Altura",
     "bmiLabel": "Seu IMC",
     "notAvailable": "N/A",
-    "goalWeight": "Peso Alvo",
-    "setGoal": "Definir Meta",
-    "goalReached": "Meta Atingida! 🎉",
-    "toLose": "a perder",
-    "toGain": "a ganhar",
     "underweight": "Abaixo do peso",
     "normal": "Peso normal",
     "overweight": "Sobrepeso",
@@ -411,6 +416,16 @@ const translationPT = {
     "obesity2": "Obesidade Grau II",
     "obesity3": "Obesidade Grau III",
     "improvementNeeded": "Perca <1>{{weight}}</1> para alcançar a categoria de <3>{{category}}</3>.",
+    "goals": {
+      "title": "Seus Objetivos",
+      "goal1": "Primeiro Objetivo",
+      "goal2": "Segundo Objetivo",
+      "finalGoal": "Meta Final",
+      "set": "Definir",
+      "edit": "Editar",
+      "allGoalsReached": "Todos os objetivos alcançados! Parabéns! 🥳",
+      "toGo": "para alcançar seu próximo objetivo"
+    },
     "goalProgress": {
       "title": "Progresso da Meta",
       "progressComplete": "{{percentage}}% Completo",
@@ -483,7 +498,7 @@ const translationPT = {
     },
     "goalReached": {
       "title": "Meta Batida!",
-      "description": "Você atingiu seu peso alvo. Parabéns!"
+      "description": "Você atingiu sua meta final de peso. Parabéns!"
     }
   }
 };

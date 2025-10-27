@@ -575,8 +575,8 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, weightEntries, theme, on
             }
         }
         
-        // 4. Goal Reached
-        if (profile.goal_weight && Math.abs(latestEntry.weight - profile.goal_weight) < 0.1) {
+        // 4. Goal Reached (Final Goal)
+        if (profile.goal_weight_final && Math.abs(latestEntry.weight - profile.goal_weight_final) < 0.1) {
             unlocked.add('GOAL_REACHED');
         }
 
@@ -729,7 +729,9 @@ const App: React.FC = () => {
             ...profileData,
             weight_unit: currentSession.user.user_metadata.weight_unit || 'kg',
             height_unit: currentSession.user.user_metadata.height_unit || 'cm',
-            goal_weight: currentSession.user.user_metadata.goal_weight || null,
+            goal_weight_1: currentSession.user.user_metadata.goal_weight_1 || null,
+            goal_weight_2: currentSession.user.user_metadata.goal_weight_2 || null,
+            goal_weight_final: currentSession.user.user_metadata.goal_weight_final || null,
         };
         setUserProfile(fullProfile);
 
@@ -788,7 +790,7 @@ const App: React.FC = () => {
 
         Object.keys(updates).forEach(key => {
             const typedKey = key as keyof UserProfile;
-            if (typedKey === 'weight_unit' || typedKey === 'height_unit' || typedKey === 'goal_weight') {
+            if (['weight_unit', 'height_unit', 'goal_weight_1', 'goal_weight_2', 'goal_weight_final'].includes(typedKey)) {
                 userMetadataUpdates[typedKey] = updates[typedKey];
             } else if (validProfileKeys.includes(typedKey)) {
                 profileTableUpdates[typedKey] = updates[typedKey];

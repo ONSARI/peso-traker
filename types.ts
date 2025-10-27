@@ -7,7 +7,9 @@ export interface UserProfile {
     dob: string; // YYYY-MM-DD
     weight_unit?: 'kg' | 'lbs';
     height_unit?: 'cm' | 'ft';
-    goal_weight?: number | null; // Stored in kg
+    goal_weight_1?: number | null;
+    goal_weight_2?: number | null;
+    goal_weight_final?: number | null;
 }
 
 export interface WeightEntry {

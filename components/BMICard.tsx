@@ -26,14 +26,14 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
     const [heightFt, setHeightFt] = useState('');
     const [heightIn, setHeightIn] = useState('');
 
-    const [isEditingGoal, setIsEditingGoal] = useState(false);
+    const [editingGoalKey, setEditingGoalKey] = useState<keyof UserProfile | null>(null);
     const [goalWeightInput, setGoalWeightInput] = useState('');
-
+    
     const [timePeriod, setTimePeriod] = useState<'all' | '7d' | '30d' | '365d'>('all');
 
     const weightUnit = profile.weight_unit || 'kg';
     const heightUnit = profile.height_unit || 'cm';
-    const { height } = profile;
+    const { height, goal_weight_1, goal_weight_2, goal_weight_final } = profile;
 
     useEffect(() => {
         if (height && heightUnit === 'ft') {
@@ -45,18 +45,6 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
         }
     }, [height, heightUnit]);
     
-     useEffect(() => {
-        if (isEditingGoal) {
-            if (profile.goal_weight) {
-                const displayGoal = weightUnit === 'lbs' ? (profile.goal_weight * 2.20462).toFixed(1) : profile.goal_weight.toFixed(1);
-                setGoalWeightInput(displayGoal);
-            } else {
-                setGoalWeightInput('');
-            }
-        }
-    }, [isEditingGoal, profile.goal_weight, weightUnit]);
-
-
     const latestWeight = useMemo(() => {
         return entries.length > 0 ? entries[entries.length - 1].weight : null;
     }, [entries]);
@@ -126,13 +114,59 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
         return null;
 
     }, [currentBmi, height, latestWeight, t]);
-
-
-     const weightToGo = useMemo(() => {
-        if (!latestWeight || !profile.goal_weight) return null;
-        return latestWeight - profile.goal_weight;
-    }, [latestWeight, profile.goal_weight]);
     
+    const activeGoalInfo = useMemo(() => {
+        if (!latestWeight || !startWeight) return null;
+
+        const isLosing = (goal_weight_final || goal_weight_1 || 0) < startWeight;
+    
+        const goals: { key: keyof UserProfile; value: number | null | undefined; label: string; start: number | null | undefined; }[] = [
+            { key: 'goal_weight_1', value: goal_weight_1, label: t('bmiCard.goals.goal1'), start: startWeight },
+            { key: 'goal_weight_2', value: goal_weight_2, label: t('bmiCard.goals.goal2'), start: goal_weight_1 },
+            { key: 'goal_weight_final', value: goal_weight_final, label: t('bmiCard.goals.finalGoal'), start: goal_weight_2 },
+        ];
+
+        for (const goal of goals) {
+            if (goal.value) {
+                const isGoalReached = isLosing ? latestWeight <= goal.value : latestWeight >= goal.value;
+                if (!isGoalReached) {
+                    return { ...goal, isAchieved: false };
+                }
+            } else {
+                // Return the first unset goal as the active one to be set
+                return { ...goal, isAchieved: false };
+            }
+        }
+
+        // If all goals are set and reached
+        if (goal_weight_final) {
+            return { ...goals[2], isAchieved: true };
+        }
+
+        return null;
+
+    }, [latestWeight, startWeight, goal_weight_1, goal_weight_2, goal_weight_final, t]);
+
+
+    const weightToGo = useMemo(() => {
+        if (!latestWeight || !activeGoalInfo || !activeGoalInfo.value || activeGoalInfo.isAchieved) return null;
+        return latestWeight - activeGoalInfo.value;
+    }, [latestWeight, activeGoalInfo]);
+
+    const progressBarInfo = useMemo(() => {
+        if (!activeGoalInfo || !activeGoalInfo.value || activeGoalInfo.isAchieved || !latestWeight) return null;
+
+        const startForBar = activeGoalInfo.start;
+        if (startForBar === null || startForBar === undefined) return null;
+
+        return {
+            startWeight: startForBar,
+            currentWeight: latestWeight,
+            goalWeight: activeGoalInfo.value,
+        };
+    }, [activeGoalInfo, latestWeight]);
+
+
     const progressData = useMemo(() => {
         if (entries.length < 2 || !height) {
             return { weightChange: null, bmiChangePercent: null };
@@ -184,18 +218,34 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
             setIsEditingHeight(false);
         }
     }
-
-    const handleGoalSave = () => {
-        const goalValue = parseFloat(goalWeightInput);
-        if (!isNaN(goalValue) && goalValue > 0) {
-            const goalInKg = weightUnit === 'lbs' ? goalValue / 2.20462 : goalValue;
-            onProfileUpdate({ goal_weight: goalInKg });
-            setIsEditingGoal(false);
+    
+    const handleEditGoal = (key: keyof UserProfile, currentValue: number | null | undefined) => {
+        setEditingGoalKey(key);
+        if (currentValue) {
+            const displayValue = weightUnit === 'lbs' ? (currentValue * 2.20462).toFixed(1) : currentValue.toFixed(1);
+            setGoalWeightInput(displayValue);
+        } else {
+            setGoalWeightInput('');
         }
     };
     
-    const displayWeight = (weightKg: number | null) => {
-        if (weightKg === null) return t('bmiCard.notAvailable');
+    const handleGoalSave = () => {
+        if (!editingGoalKey) return;
+        const goalValue = parseFloat(goalWeightInput);
+        if (!isNaN(goalValue) && goalValue > 0) {
+            const goalInKg = weightUnit === 'lbs' ? goalValue / 2.20462 : goalValue;
+            onProfileUpdate({ [editingGoalKey]: goalInKg });
+            setEditingGoalKey(null);
+            setGoalWeightInput('');
+        } else if (goalWeightInput === '') { // Allow clearing the goal
+            onProfileUpdate({ [editingGoalKey]: null });
+            setEditingGoalKey(null);
+            setGoalWeightInput('');
+        }
+    };
+
+    const displayWeight = (weightKg: number | null | undefined) => {
+        if (weightKg === null || typeof weightKg === 'undefined') return t('bmiCard.notAvailable');
         if (weightUnit === 'lbs') {
             return `${(weightKg * 2.20462).toFixed(1)} lbs`;
         }
@@ -242,6 +292,13 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
             ))}
         </div>
     );
+    
+    const goals: { key: keyof UserProfile; value: number | null | undefined; label: string; prereq: number | null | undefined }[] = [
+        { key: 'goal_weight_1', value: goal_weight_1, label: t('bmiCard.goals.goal1'), prereq: 1 }, // No prereq
+        { key: 'goal_weight_2', value: goal_weight_2, label: t('bmiCard.goals.goal2'), prereq: goal_weight_1 },
+        { key: 'goal_weight_final', value: goal_weight_final, label: t('bmiCard.goals.finalGoal'), prereq: goal_weight_2 },
+    ];
+
 
     return (
         <div className="bg-card dark:bg-gray-800 p-6 rounded-lg shadow-lg">
@@ -304,61 +361,74 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
                     )}
                 </div>
 
-                <div className="space-y-2 text-center">
-                    <div className="flex justify-center items-baseline gap-4">
-                        <span className="text-text-secondary dark:text-gray-400">{t('bmiCard.goalWeight')}:</span>
-                         {isEditingGoal ? (
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="number"
-                                    step="0.1"
-                                    value={goalWeightInput}
-                                    onChange={(e) => setGoalWeightInput(e.target.value)}
-                                    className="w-24 px-2 py-1 border border-gray-300 rounded-md text-right dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    autoFocus
-                                    onKeyDown={(e) => e.key === 'Enter' && handleGoalSave()}
-                                />
-                                <span className="text-text-secondary dark:text-gray-400">{weightUnit}</span>
-                                <button onClick={handleGoalSave} className="text-green-500 hover:text-green-700">✓</button>
-                                <button onClick={() => setIsEditingGoal(false)} className="text-red-500 hover:text-red-700">×</button>
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                {profile.goal_weight ? (
-                                     <>
-                                        <span className="text-lg font-semibold text-text-primary dark:text-gray-200">
-                                            {displayWeight(profile.goal_weight)}
-                                        </span>
-                                        <button onClick={() => setIsEditingGoal(true)} className="text-text-secondary dark:text-gray-400 hover:text-primary">
-                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" /></svg>
-                                        </button>
-                                    </>
-                                ) : (
-                                    <button onClick={() => setIsEditingGoal(true)} className="text-sm text-primary hover:underline">
-                                        {t('bmiCard.setGoal')}
-                                    </button>
+                <hr className="dark:border-gray-700"/>
+
+                <div className="space-y-1">
+                    <h3 className="text-lg font-bold text-text-primary dark:text-gray-100 text-center">{t('bmiCard.goals.title')}</h3>
+                    
+                    {goals.map((goal, index) => {
+                        const isAchieved = latestWeight && goal.value && ((startWeight || 0) > goal.value ? latestWeight <= goal.value : latestWeight >= goal.value);
+                        const isActive = activeGoalInfo?.key === goal.key;
+                        const isEditingThis = editingGoalKey === goal.key;
+                        const canEdit = !!goal.prereq;
+
+                        return (
+                            <React.Fragment key={goal.key}>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex flex-col items-center">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${isAchieved ? 'bg-green-500' : isActive ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                                            {isAchieved ? '✓' : isActive ? '🎯' : '🏁'}
+                                        </div>
+                                    </div>
+                                    <div className="flex-grow">
+                                        <div className="text-sm font-semibold text-text-secondary dark:text-gray-400">{goal.label}</div>
+                                        {isEditingThis ? (
+                                            <div className="flex items-center gap-2">
+                                                <input type="number" step="0.1" value={goalWeightInput} onChange={(e) => setGoalWeightInput(e.target.value)} className="w-24 px-2 py-1 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" autoFocus onKeyDown={(e) => e.key === 'Enter' && handleGoalSave()} />
+                                                <span className="text-text-secondary dark:text-gray-400">{weightUnit}</span>
+                                                <button onClick={handleGoalSave} className="text-green-500 hover:text-green-700">✓</button>
+                                                <button onClick={() => setEditingGoalKey(null)} className="text-red-500 hover:text-red-700">×</button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                {goal.value ? (
+                                                    <span className="text-lg font-bold text-text-primary dark:text-gray-200">{displayWeight(goal.value)}</span>
+                                                ) : null}
+                                                <button onClick={() => handleEditGoal(goal.key, goal.value)} disabled={!canEdit} className="text-text-secondary dark:text-gray-400 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed">
+                                                    {goal.value ? t('bmiCard.goals.edit') : t('bmiCard.goals.set')}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                {index < goals.length - 1 && (
+                                    <div className="h-6 w-8 flex justify-center">
+                                        <div className="border-l-2 border-dashed border-gray-300 dark:border-gray-600 h-full"></div>
+                                    </div>
                                 )}
-                            </div>
-                        )}
-                    </div>
-                     {weightToGo !== null && (
-                        <div>
-                            {Math.abs(weightToGo) < 0.05 ? (
-                                <p className="text-lg font-semibold text-green-500">{t('bmiCard.goalReached')}</p>
-                            ) : (
-                                <p className="text-text-secondary dark:text-gray-400">
-                                    <span className="font-bold text-lg text-primary">{displayWeight(Math.abs(weightToGo))}</span> {t(weightToGo > 0 ? 'bmiCard.toLose' : 'bmiCard.toGain')}
-                                </p>
-                            )}
-                        </div>
-                    )}
+                            </React.Fragment>
+                        )
+                    })}
                 </div>
 
-                {profile.goal_weight && latestWeight && startWeight && (
+                {weightToGo !== null && (
+                    <div className="text-center">
+                        <p className="text-text-secondary dark:text-gray-400">
+                            <span className="font-bold text-lg text-primary">{displayWeight(Math.abs(weightToGo))}</span> {t('bmiCard.goals.toGo')}
+                        </p>
+                    </div>
+                )}
+                
+                {activeGoalInfo?.isAchieved && (
+                    <p className="text-center font-semibold text-green-500">{t('bmiCard.goals.allGoalsReached')}</p>
+                )}
+
+
+                {progressBarInfo && (
                      <GoalProgressBar
-                        startWeight={startWeight}
-                        currentWeight={latestWeight}
-                        goalWeight={profile.goal_weight}
+                        startWeight={progressBarInfo.startWeight}
+                        currentWeight={progressBarInfo.currentWeight}
+                        goalWeight={progressBarInfo.goalWeight}
                         weightUnit={weightUnit}
                     />
                 )}
