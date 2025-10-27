@@ -504,7 +504,7 @@ const App: React.FC = () => {
 
     if (error) {
       console.error('Error updating profile:', error);
-      setAppError(t('dashboard.profileUpdateError'));
+      setAppError(`${t('dashboard.profileUpdateError')} ${t('dashboard.errorDetails', { details: error.message })}`);
       return false;
     } else if (data) {
       setProfile(data);
@@ -524,7 +524,7 @@ const App: React.FC = () => {
     
     if (error) {
       console.error('Error adding weight entry:', error);
-      setAppError(t('dashboard.weightAddError'));
+      setAppError(`${t('dashboard.weightAddError')} ${t('dashboard.errorDetails', { details: error.message })}`);
     } else if (data) {
       setEntries(prev => [...prev, data].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
     }
@@ -535,7 +535,7 @@ const App: React.FC = () => {
     const { error } = await supabase.from('weights').delete().eq('id', id);
     if (error) {
       console.error('Error deleting weight entry:', error);
-      setAppError(t('dashboard.weightDeleteError'));
+      setAppError(`${t('dashboard.weightDeleteError')} ${t('dashboard.errorDetails', { details: error.message })}`);
     } else {
       setEntries(prev => prev.filter(entry => entry.id !== id));
     }
@@ -733,10 +733,12 @@ const App: React.FC = () => {
         </div>
       </header>
        {appError && (
-            <div className="fixed top-20 start-1/2 -translate-x-1/2 z-50 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg flex items-center dark:bg-red-900/80 dark:text-red-200 dark:border-red-600">
-                <p>{appError}</p>
-                <button onClick={() => setAppError(null)} className="ml-4 text-red-500 hover:text-red-700 dark:text-red-300 dark:hover:text-red-100">
-                   &times;
+            <div className="fixed top-20 start-1/2 -translate-x-1/2 z-50 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg flex items-start dark:bg-red-900/80 dark:text-red-200 dark:border-red-600 max-w-md w-full">
+                <div className="flex-grow">
+                  <p>{appError}</p>
+                </div>
+                <button onClick={() => setAppError(null)} className="ml-4 -mt-1 -mr-2 text-red-500 hover:text-red-700 dark:text-red-300 dark:hover:text-red-100">
+                   <span className="text-2xl">&times;</span>
                 </button>
             </div>
         )}
