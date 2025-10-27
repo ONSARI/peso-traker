@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import type { WeightEntry, UserProfile } from '../types';
 import { GoalProgressBar } from './GoalProgressBar';
 
@@ -89,6 +89,44 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
         if (currentBmi === null) return null;
         return getBMICategory(currentBmi);
     }, [currentBmi, t]);
+    
+    const improvementData = useMemo(() => {
+        if (currentBmi === null || currentBmi < 25 || !height || !latestWeight) {
+            return null;
+        }
+
+        let targetBmi: number;
+        let nextCategoryKey: string;
+
+        if (currentBmi >= 40) { // Obesity III
+            targetBmi = 39.9;
+            nextCategoryKey = 'bmiCard.obesity2';
+        } else if (currentBmi >= 35) { // Obesity II
+            targetBmi = 34.9;
+            nextCategoryKey = 'bmiCard.obesity1';
+        } else if (currentBmi >= 30) { // Obesity I
+            targetBmi = 29.9;
+            nextCategoryKey = 'bmiCard.overweight';
+        } else { // Overweight
+            targetBmi = 24.9;
+            nextCategoryKey = 'bmiCard.normal';
+        }
+
+        const heightInMeters = height / 100;
+        const targetWeight = targetBmi * (heightInMeters * heightInMeters);
+        const weightToLoseKg = latestWeight - targetWeight;
+
+        if (weightToLoseKg > 0) {
+            return {
+                weightToLose: weightToLoseKg,
+                nextCategoryName: t(nextCategoryKey)
+            };
+        }
+
+        return null;
+
+    }, [currentBmi, height, latestWeight, t]);
+
 
      const weightToGo = useMemo(() => {
         if (!latestWeight || !profile.goal_weight) return null;
@@ -246,6 +284,20 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
                         <>
                             <p className={`text-5xl font-bold ${bmiResult.color}`}>{currentBmi.toFixed(1)}</p>
                             <p className={`text-lg font-semibold ${bmiResult.color}`}>{bmiResult.category}</p>
+                             {improvementData && (
+                                <div className="mt-3 text-sm text-text-secondary dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 p-2 rounded-lg">
+                                    <Trans i18nKey="bmiCard.improvementNeeded"
+                                        values={{ 
+                                            weight: displayWeight(improvementData.weightToLose), 
+                                            category: improvementData.nextCategoryName 
+                                        }}
+                                        components={{
+                                            1: <strong className="text-primary" />,
+                                            3: <strong className="text-text-primary dark:text-gray-200" />,
+                                        }}
+                                    />
+                                </div>
+                            )}
                         </>
                     ) : (
                         <p className="text-2xl font-bold text-text-secondary dark:text-gray-400">{t('bmiCard.notAvailable')}</p>

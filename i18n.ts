@@ -87,7 +87,8 @@ const translationEN = {
     "overweight": "Overweight",
     "obesity1": "Obesity Grade I",
     "obesity2": "Obesity Grade II",
-    "obesity3": "Obesity Grade III (Morbid)",
+    "obesity3": "Obesity Grade III",
+    "improvementNeeded": "Lose <1>{{weight}}</1> to reach the <3>{{category}}</3> category.",
     "goalProgress": {
       "title": "Goal Progress",
       "progressComplete": "{{percentage}}% Complete",
@@ -247,7 +248,8 @@ const translationES = {
     "overweight": "Sobrepeso",
     "obesity1": "Obesidad Grado I",
     "obesity2": "Obesidad Grado II",
-    "obesity3": "Obesidad Grado III (Mórbida)",
+    "obesity3": "Obesidad Grado III",
+    "improvementNeeded": "Pierde <1>{{weight}}</1> para alcanzar la categoría de <3>{{category}}</3>.",
     "goalProgress": {
       "title": "Progreso Hacia la Meta",
       "progressComplete": "{{percentage}}% Completado",
@@ -407,7 +409,8 @@ const translationPT = {
     "overweight": "Sobrepeso",
     "obesity1": "Obesidade Grau I",
     "obesity2": "Obesidade Grau II",
-    "obesity3": "Obesidade Grau III (Mórbida)",
+    "obesity3": "Obesidade Grau III",
+    "improvementNeeded": "Perca <1>{{weight}}</1> para alcançar a categoria de <3>{{category}}</3>.",
     "goalProgress": {
       "title": "Progresso da Meta",
       "progressComplete": "{{percentage}}% Completo",
