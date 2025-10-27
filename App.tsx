@@ -124,24 +124,9 @@ const Auth: React.FC = () => {
             return;
         }
 
-        if (data.user) {
-            const { name, dob, height } = data.user.user_metadata;
-            const { error: profileError } = await supabase
-                .from('profiles')
-                .insert({
-                    id: data.user.id,
-                    name,
-                    dob,
-                    height,
-                });
-
-            if (profileError) {
-                setError(t('auth.profileCreationError', { message: profileError.message }));
-                await supabase.auth.signOut();
-                setLoading(false);
-                return;
-            }
-        }
+        // The profile will now be created by a trigger or by the auto-healing fetchData function on first login.
+        // This makes the signup flow simpler and more robust.
+        
         setLoading(false);
     };
 
@@ -695,18 +680,41 @@ const App: React.FC = () => {
         setLoading(true);
         setFetchError(null);
 
-        const { data: profileData, error: profileError } = await supabase
+        let { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', currentSession.user.id)
             .single();
 
-        if (profileError) {
+        // Self-healing: If profile doesn't exist, create it.
+        if (profileError && profileError.code === 'PGRST116') { // PGRST116: "exact one row not found"
+             console.log("No profile found for user, creating one.");
+             const { name, dob, height } = currentSession.user.user_metadata;
+             const { data: newProfile, error: insertError } = await supabase
+                .from('profiles')
+                .insert({
+                    id: currentSession.user.id,
+                    name,
+                    dob,
+                    height,
+                })
+                .select()
+                .single();
+            
+            if(insertError) {
+                console.error(`Error creating profile:`, insertError.message);
+                setFetchError(t('dashboard.profileCreationError', { message: insertError.message }));
+                setLoading(false);
+                return;
+            }
+            profileData = newProfile;
+        } else if (profileError) {
             console.error(`Error fetching profile:`, profileError.message);
             setFetchError(t('dashboard.profileFetchError'));
             setLoading(false);
             return;
         }
+
 
         const fullProfile: UserProfile = {
             ...profileData,
