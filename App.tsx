@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import type { UserProfile, WeightEntry, Achievement, Country } from './types';
-import { supabase } from './supabaseClient';
+import { supabase, supabaseUrl } from './supabaseClient';
 import { BMICard } from './components/BMICard';
 import { WeightChart } from './components/WeightChart';
 import { BMIChart } from './components/BMIChart';
@@ -348,6 +348,46 @@ const Auth: React.FC = () => {
     );
 };
 
+const RLSSetupGuide: React.FC<{ projectRef?: string }> = ({ projectRef }) => {
+    const { t } = useTranslation();
+    const [copied, setCopied] = useState(false);
+    const sqlEditorLink = projectRef 
+        ? `https://app.supabase.com/project/${projectRef}/sql/new` 
+        : `https://app.supabase.com/dashboard/project/${t('dashboard.rlsSolution.yourProjectRef')}/sql/new`;
+
+    const fullSQLScript = t('dashboard.rlsSolution.fullSQLScript');
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(fullSQLScript);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="text-left rtl:text-right space-y-4">
+            <p className="font-bold text-lg">{t('dashboard.rlsErrorTitle')}</p>
+            <p className="text-sm">{t('dashboard.rlsErrorBody')}</p>
+            
+            <div className="space-y-2">
+                <p className="font-semibold"><Trans i18nKey="dashboard.rlsSolution.step1" components={{ 1: <strong/> }} /></p>
+                <div className="relative bg-gray-100 dark:bg-gray-900 rounded-lg p-3">
+                    <button onClick={handleCopy} className="absolute top-2 right-2 rtl:right-auto rtl:left-2 bg-gray-200 dark:bg-gray-700 text-xs font-semibold px-2 py-1 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600">
+                        {copied ? t('dashboard.rlsSolution.copied') : t('dashboard.rlsSolution.copy')}
+                    </button>
+                    <pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-all overflow-x-auto">
+                        <code>{fullSQLScript}</code>
+                    </pre>
+                </div>
+            </div>
+
+            <p><Trans i18nKey="dashboard.rlsSolution.step2" components={{ 1: <a href={sqlEditorLink} target="_blank" rel="noopener noreferrer" className="text-primary font-bold hover:underline"/> }} /></p>
+            <p className="text-sm">{t('dashboard.rlsSolution.step3')}</p>
+            <p className="text-sm">{t('dashboard.rlsSolution.step4')}</p>
+        </div>
+    );
+}
+
+
 const DarkModeToggle: React.FC<{ theme: 'light' | 'dark'; onToggle: () => void }> = ({ theme, onToggle }) => {
   return (
     <button
@@ -404,16 +444,11 @@ const App: React.FC = () => {
 
     if (profileError || !profileData) {
       console.error('Error fetching profile:', profileError);
-      if (profileError && profileError.message.includes("security policies")) {
+      if (profileError && profileError.message.includes("security policy")) {
+         const projectRef = supabaseUrl.match(/https:\/\/(\w+)\.supabase\.co/)?.[1];
          setErrorDetails({
             title: t('dashboard.dataErrorTitle'),
-            body: (
-                <>
-                    <p className="font-bold text-lg mb-2">{t('dashboard.rlsErrorTitle')}</p>
-                    <p className="mb-4"><Trans i18nKey="dashboard.rlsErrorBody" components={{ 1: <code className="bg-gray-200 dark:bg-gray-700 p-1 rounded text-sm" /> }} /></p>
-                    <p><Trans i18nKey="dashboard.rlsErrorSolution" components={{ 1: <strong />, 3: <strong className="font-semibold" /> }} /></p>
-                </>
-            )
+            body: <RLSSetupGuide projectRef={projectRef} />
         });
       } else {
         setErrorDetails({ title: t('dashboard.syncErrorTitle'), body: <p>{t('dashboard.syncErrorBody')}</p> });
@@ -623,7 +658,7 @@ const App: React.FC = () => {
   if (errorDetails) {
      return (
         <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-screen">
-            <div className="bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center max-w-lg mx-auto w-full">
+            <div className="bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-2xl mx-auto w-full">
                 <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">{errorDetails.title}</h2>
                 <div className="text-text-secondary dark:text-gray-300 space-y-4">{errorDetails.body}</div>
                 <button 
