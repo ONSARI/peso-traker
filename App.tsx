@@ -387,6 +387,45 @@ const RLSSetupGuide: React.FC<{ projectRef?: string }> = ({ projectRef }) => {
     );
 }
 
+const SchemaFixGuide: React.FC<{ projectRef?: string }> = ({ projectRef }) => {
+    const { t } = useTranslation();
+    const [copied, setCopied] = useState(false);
+    const sqlEditorLink = projectRef 
+        ? `https://app.supabase.com/project/${projectRef}/sql/new` 
+        : `https://app.supabase.com/dashboard/project/${t('dashboard.rlsSolution.yourProjectRef')}/sql/new`;
+
+    const fullSQLScript = t('dashboard.schemaError.script');
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(fullSQLScript);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="text-left rtl:text-right space-y-4">
+            <p className="font-bold text-lg">{t('dashboard.schemaError.title')}</p>
+            <p className="text-sm">{t('dashboard.schemaError.body')}</p>
+            
+            <div className="space-y-2">
+                <p className="font-semibold"><Trans i18nKey="dashboard.rlsSolution.step1" components={{ 1: <strong/> }} /></p>
+                <div className="relative bg-gray-100 dark:bg-gray-900 rounded-lg p-3">
+                    <button onClick={handleCopy} className="absolute top-2 right-2 rtl:right-auto rtl:left-2 bg-gray-200 dark:bg-gray-700 text-xs font-semibold px-2 py-1 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600">
+                        {copied ? t('dashboard.rlsSolution.copied') : t('dashboard.rlsSolution.copy')}
+                    </button>
+                    <pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-all overflow-x-auto">
+                        <code>{fullSQLScript}</code>
+                    </pre>
+                </div>
+            </div>
+
+            <p><Trans i18nKey="dashboard.rlsSolution.step2" components={{ 1: <a href={sqlEditorLink} target="_blank" rel="noopener noreferrer" className="text-primary font-bold hover:underline"/> }} /></p>
+            <p className="text-sm">{t('dashboard.rlsSolution.step3')}</p>
+            <p className="text-sm">{t('dashboard.rlsSolution.step4')}</p>
+        </div>
+    );
+};
+
 
 const DarkModeToggle: React.FC<{ theme: 'light' | 'dark'; onToggle: () => void }> = ({ theme, onToggle }) => {
   return (
@@ -431,6 +470,31 @@ const App: React.FC = () => {
     { id: 'bmi_improved', titleKey: 'achievements.bmiImproved.title', descriptionKey: 'achievements.bmiImproved.description', Icon: ShieldCheckIcon },
     { id: 'goal_reached', titleKey: 'achievements.goalReached.title', descriptionKey: 'achievements.goalReached.description', Icon: TrophyIcon },
   ], []);
+  
+  const handleDatabaseError = useCallback((error: { message: string }) => {
+    const projectRef = supabaseUrl.match(/https:\/\/(\w+)\.supabase\.co/)?.[1];
+    
+    // Schema error (missing column/table)
+    if (error.message.includes("column") && (error.message.includes("does not exist") || error.message.includes("Could not find"))) {
+         setErrorDetails({
+            title: t('dashboard.dataErrorTitle'),
+            body: <SchemaFixGuide projectRef={projectRef} />
+        });
+        return true;
+    }
+    
+    // RLS (permissions) error
+    if (error.message.includes("security policy") || error.message.includes("violates row-level security")) {
+         setErrorDetails({
+            title: t('dashboard.dataErrorTitle'),
+            body: <RLSSetupGuide projectRef={projectRef} />
+        });
+        return true;
+    }
+    
+    return false;
+  }, [t]);
+
 
   const fetchData = useCallback(async (currentUser: User) => {
     setErrorDetails(null);
@@ -444,12 +508,8 @@ const App: React.FC = () => {
 
     if (profileError || !profileData) {
       console.error('Error fetching profile:', profileError);
-      if (profileError && profileError.message.includes("security policy")) {
-         const projectRef = supabaseUrl.match(/https:\/\/(\w+)\.supabase\.co/)?.[1];
-         setErrorDetails({
-            title: t('dashboard.dataErrorTitle'),
-            body: <RLSSetupGuide projectRef={projectRef} />
-        });
+       if (profileError && handleDatabaseError(profileError)) {
+        // Error was handled by showing a guide
       } else {
         setErrorDetails({ title: t('dashboard.syncErrorTitle'), body: <p>{t('dashboard.syncErrorBody')}</p> });
       }
@@ -470,7 +530,7 @@ const App: React.FC = () => {
       setEntries(weightsData || []);
     }
     setLoading(false);
-  }, [t]);
+  }, [t, handleDatabaseError]);
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
@@ -494,6 +554,7 @@ const App: React.FC = () => {
   const updateProfile = useCallback(async (updates: Partial<UserProfile>): Promise<boolean> => {
     if (!user || !profile) return false;
     setAppError(null);
+    setErrorDetails(null);
     
     const { data, error } = await supabase
       .from('profiles')
@@ -504,18 +565,21 @@ const App: React.FC = () => {
 
     if (error) {
       console.error('Error updating profile:', error);
-      setAppError(`${t('dashboard.profileUpdateError')} ${t('dashboard.errorDetails', { details: error.message })}`);
+      if (!handleDatabaseError(error)) {
+        setAppError(`${t('dashboard.profileUpdateError')} ${t('dashboard.errorDetails', { details: error.message })}`);
+      }
       return false;
     } else if (data) {
       setProfile(data);
       return true;
     }
     return false;
-  }, [user, profile, t]);
+  }, [user, profile, t, handleDatabaseError]);
 
   const addWeightEntry = useCallback(async (weightInKg: number, date: string) => {
     if (!user) return;
     setAppError(null);
+    setErrorDetails(null);
     const { data, error } = await supabase
       .from('weights')
       .insert([{ weight: weightInKg, date, user_id: user.id }])
@@ -524,22 +588,27 @@ const App: React.FC = () => {
     
     if (error) {
       console.error('Error adding weight entry:', error);
-      setAppError(`${t('dashboard.weightAddError')} ${t('dashboard.errorDetails', { details: error.message })}`);
+      if (!handleDatabaseError(error)) {
+        setAppError(`${t('dashboard.weightAddError')} ${t('dashboard.errorDetails', { details: error.message })}`);
+      }
     } else if (data) {
       setEntries(prev => [...prev, data].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
     }
-  }, [user, t]);
+  }, [user, t, handleDatabaseError]);
 
   const deleteWeightEntry = useCallback(async (id: number) => {
     setAppError(null);
+    setErrorDetails(null);
     const { error } = await supabase.from('weights').delete().eq('id', id);
     if (error) {
       console.error('Error deleting weight entry:', error);
-      setAppError(`${t('dashboard.weightDeleteError')} ${t('dashboard.errorDetails', { details: error.message })}`);
+      if (!handleDatabaseError(error)) {
+         setAppError(`${t('dashboard.weightDeleteError')} ${t('dashboard.errorDetails', { details: error.message })}`);
+      }
     } else {
       setEntries(prev => prev.filter(entry => entry.id !== id));
     }
-  }, [t]);
+  }, [t, handleDatabaseError]);
 
   const checkAchievements = useCallback(() => {
     if (entries.length === 0 || !profile) return;
