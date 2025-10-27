@@ -456,8 +456,8 @@ const App: React.FC = () => {
     };
   }, [fetchData]);
 
-  const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
-    if (!user || !profile) return;
+  const updateProfile = useCallback(async (updates: Partial<UserProfile>): Promise<boolean> => {
+    if (!user || !profile) return false;
     setAppError(null);
     
     const { data, error } = await supabase
@@ -470,9 +470,12 @@ const App: React.FC = () => {
     if (error) {
       console.error('Error updating profile:', error);
       setAppError(t('dashboard.profileUpdateError'));
+      return false;
     } else if (data) {
       setProfile(data);
+      return true;
     }
+    return false;
   }, [user, profile, t]);
 
   const addWeightEntry = useCallback(async (weightInKg: number, date: string) => {
@@ -595,11 +598,13 @@ const App: React.FC = () => {
     setNewName(profile?.name || '');
   }, [profile?.name]);
   
-  const handleNameUpdate = (e: React.FormEvent) => {
+  const handleNameUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if(newName.trim()){
-      updateProfile({ name: newName.trim() });
-      setEditingName(false);
+      const success = await updateProfile({ name: newName.trim() });
+      if (success) {
+        setEditingName(false);
+      }
     }
   }
 
@@ -663,6 +668,7 @@ const App: React.FC = () => {
                     onChange={(e) => setNewName(e.target.value)} 
                     className="px-2 py-1 border-b-2 border-primary bg-transparent focus:outline-none dark:text-white"
                     autoFocus
+                    onBlur={() => setEditingName(false)}
                   />
                   <button type="submit" className="text-green-500 hover:text-green-700">✓</button>
                   <button type="button" onClick={() => setEditingName(false)} className="text-red-500 hover:text-red-700">×</button>

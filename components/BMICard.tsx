@@ -6,7 +6,7 @@ import { GoalProgressBar } from './GoalProgressBar';
 interface BMICardProps {
     profile: UserProfile;
     entries: WeightEntry[];
-    onProfileUpdate: (updates: Partial<UserProfile>) => void;
+    onProfileUpdate: (updates: Partial<UserProfile>) => Promise<boolean>;
 }
 
 const TrendArrow: React.FC<{ value: number }> = ({ value }) => {
@@ -203,7 +203,7 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
         return { weightChange, bmiChangePercent };
     }, [entries, height, timePeriod]);
 
-    const handleHeightSave = () => {
+    const handleHeightSave = async () => {
         let heightInCm: number;
         if (heightUnit === 'cm') {
             heightInCm = parseFloat(String(heightCm));
@@ -214,8 +214,10 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
         }
         
         if (!isNaN(heightInCm) && heightInCm > 0) {
-            onProfileUpdate({ height: heightInCm });
-            setIsEditingHeight(false);
+            const success = await onProfileUpdate({ height: heightInCm });
+            if (success) {
+                setIsEditingHeight(false);
+            }
         }
     }
     
@@ -229,18 +231,22 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
         }
     };
     
-    const handleGoalSave = () => {
+    const handleGoalSave = async () => {
         if (!editingGoalKey) return;
         const goalValue = parseFloat(goalWeightInput);
         if (!isNaN(goalValue) && goalValue > 0) {
             const goalInKg = weightUnit === 'lbs' ? goalValue / 2.20462 : goalValue;
-            onProfileUpdate({ [editingGoalKey]: goalInKg });
-            setEditingGoalKey(null);
-            setGoalWeightInput('');
+            const success = await onProfileUpdate({ [editingGoalKey]: goalInKg });
+            if (success) {
+                setEditingGoalKey(null);
+                setGoalWeightInput('');
+            }
         } else if (goalWeightInput === '') { // Allow clearing the goal
-            onProfileUpdate({ [editingGoalKey]: null });
-            setEditingGoalKey(null);
-            setGoalWeightInput('');
+            const success = await onProfileUpdate({ [editingGoalKey]: null });
+            if (success) {
+                setEditingGoalKey(null);
+                setGoalWeightInput('');
+            }
         }
     };
 
