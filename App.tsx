@@ -516,9 +516,11 @@ const App: React.FC = () => {
   const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
   const [unlockedAchievements, setUnlockedAchievements] = useLocalStorage<string[]>('unlocked_achievements', []);
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
+  const [schemaNeedsFix, setSchemaNeedsFix] = useState(false);
   const { t } = useTranslation();
 
   const unlockedAchievementIds = useMemo(() => new Set(unlockedAchievements), [unlockedAchievements]);
+  const projectRef = useMemo(() => supabaseUrl.match(/https:\/\/(\w+)\.supabase\.co/)?.[1], []);
 
   const allAchievements: Achievement[] = useMemo(() => [
     { id: 'first_step', titleKey: 'achievements.firstStep.title', descriptionKey: 'achievements.firstStep.description', Icon: RocketIcon },
@@ -529,17 +531,6 @@ const App: React.FC = () => {
   ], []);
   
   const handleDatabaseError = useCallback((error: { message: string }) => {
-    const projectRef = supabaseUrl.match(/https:\/\/(\w+)\.supabase\.co/)?.[1];
-    
-    // Schema error (missing column/table)
-    if (error.message.includes("column") && (error.message.includes("does not exist") || error.message.includes("Could not find"))) {
-         setErrorDetails({
-            title: t('dashboard.dataErrorTitle'),
-            body: <SchemaFixGuide projectRef={projectRef} />
-        });
-        return true;
-    }
-    
     // RLS (permissions) error
     if (error.message.includes("security policy") || error.message.includes("violates row-level security")) {
          setErrorDetails({
@@ -548,31 +539,59 @@ const App: React.FC = () => {
         });
         return true;
     }
+    // Schema error (missing column/table) - this is now a fallback for unexpected schema errors
+    if (error.message.includes("column") && (error.message.includes("does not exist") || error.message.includes("Could not find"))) {
+         setErrorDetails({
+            title: t('dashboard.dataErrorTitle'),
+            body: <SchemaFixGuide projectRef={projectRef} />
+        });
+        return true;
+    }
     
     return false;
-  }, [t]);
+  }, [t, projectRef]);
 
 
   const fetchData = useCallback(async (currentUser: User) => {
     setErrorDetails(null);
     setLoading(true);
-    
-    const { data: profileData, error: profileError } = await supabase
+    setSchemaNeedsFix(false);
+
+    // Attempt 1: Fetch profile with all columns
+    const { data: fullProfileData, error: fullProfileError } = await supabase
       .from('profiles')
       .select('id, name, height, dob, weight_unit, height_unit, goal_weight_1, goal_weight_2, goal_weight_final')
       .eq('id', currentUser.id)
       .single();
 
-    if (profileError || !profileData) {
-      console.error('Error fetching profile:', profileError);
-       if (profileError && handleDatabaseError(profileError)) {
-        // Error was handled by showing a guide
-      } else {
-        setErrorDetails({ title: t('dashboard.syncErrorTitle'), body: <p>{t('dashboard.syncErrorBody')}</p> });
-      }
-      setProfile(null);
+    if (fullProfileError) {
+        const isSchemaError = fullProfileError.message.includes("column") && (fullProfileError.message.includes("does not exist") || fullProfileError.message.includes("Could not find"));
+
+        if (isSchemaError) {
+            console.warn('Schema error detected. Falling back to basic profile fetch.');
+            setSchemaNeedsFix(true);
+
+            // Attempt 2: Fetch only basic profile data
+            const { data: basicProfileData, error: basicProfileError } = await supabase
+              .from('profiles')
+              .select('id, name, height, dob, weight_unit, height_unit')
+              .eq('id', currentUser.id)
+              .single();
+            
+            if (basicProfileError) {
+                // If even the basic query fails, it's a more serious issue like RLS.
+                handleDatabaseError(basicProfileError);
+                setProfile(null);
+            } else {
+                 setProfile(basicProfileData);
+            }
+        } else {
+            // It's a different, critical error (like RLS)
+            handleDatabaseError(fullProfileError);
+            setProfile(null);
+        }
     } else {
-      setProfile(profileData);
+      setProfile(fullProfileData);
     }
     
     const { data: weightsData, error: weightsError } = await supabase
@@ -613,25 +632,36 @@ const App: React.FC = () => {
     setAppError(null);
     setErrorDetails(null);
     
+    const selectString = schemaNeedsFix
+      ? 'id, name, height, dob, weight_unit, height_unit'
+      : 'id, name, height, dob, weight_unit, height_unit, goal_weight_1, goal_weight_2, goal_weight_final';
+
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)
       .eq('id', user.id)
-      .select('id, name, height, dob, weight_unit, height_unit, goal_weight_1, goal_weight_2, goal_weight_final')
+      .select(selectString)
       .single();
 
     if (error) {
       console.error('Error updating profile:', error);
-      if (!handleDatabaseError(error)) {
+       const isSchemaError = error.message.includes("column") && (error.message.includes("does not exist") || error.message.includes("Could not find"));
+       if (isSchemaError) {
+           setSchemaNeedsFix(true);
+           setAppError(t('dashboard.profileUpdateError'));
+       } else if (!handleDatabaseError(error)) {
         setAppError(`${t('dashboard.profileUpdateError')} ${t('dashboard.errorDetails', { details: error.message })}`);
       }
       return false;
     } else if (data) {
       setProfile(data);
+       if (data.goal_weight_final !== undefined) {
+           setSchemaNeedsFix(false);
+       }
       return true;
     }
     return false;
-  }, [user, profile, t, handleDatabaseError]);
+  }, [user, profile, t, handleDatabaseError, schemaNeedsFix]);
 
   const addWeightEntry = useCallback(async (weightInKg: number, date: string) => {
     if (!user) return;
@@ -799,9 +829,6 @@ const App: React.FC = () => {
   }
 
   if (!profile) {
-    // This state can happen if profile fetch fails but isn't an RLS error.
-    // The `errorDetails` state should ideally be showing a message.
-    // This is a fallback.
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-xl font-semibold text-red-500">{t('dashboard.profileFetchError')}</div>
@@ -871,7 +898,7 @@ const App: React.FC = () => {
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 space-y-6">
-            <BMICard profile={profile} entries={entries} onProfileUpdate={updateProfile} />
+            <BMICard profile={profile} entries={entries} onProfileUpdate={updateProfile} schemaNeedsFix={schemaNeedsFix} projectRef={projectRef} />
             <Achievements allAchievements={allAchievements} unlockedIds={unlockedAchievementIds} />
           </div>
           <div className="lg:col-span-2 space-y-6">

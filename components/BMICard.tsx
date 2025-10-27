@@ -7,6 +7,8 @@ interface BMICardProps {
     profile: UserProfile;
     entries: WeightEntry[];
     onProfileUpdate: (updates: Partial<UserProfile>) => Promise<boolean>;
+    schemaNeedsFix: boolean;
+    projectRef?: string | null;
 }
 
 const TrendArrow: React.FC<{ value: number }> = ({ value }) => {
@@ -19,7 +21,46 @@ const TrendArrow: React.FC<{ value: number }> = ({ value }) => {
     );
 };
 
-export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpdate }) => {
+
+const InlineSchemaFixGuide: React.FC<{ projectRef?: string | null }> = ({ projectRef }) => {
+    const { t } = useTranslation();
+    const [copied, setCopied] = useState(false);
+    const sqlEditorLink = projectRef
+        ? `https://app.supabase.com/project/${projectRef}/sql/new`
+        : `https://app.supabase.com/dashboard/project/${t('dashboard.rlsSolution.yourProjectRef')}/sql/new`;
+
+    const fullSQLScript = t('dashboard.schemaError.script');
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(fullSQLScript);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="mt-4 p-4 border-l-4 border-yellow-400 bg-yellow-50 dark:bg-gray-900/50 rounded-r-lg text-left rtl:text-right space-y-2">
+            <p className="font-bold text-yellow-800 dark:text-yellow-300">{t('dashboard.schemaError.title')}</p>
+            <p className="text-sm text-yellow-700 dark:text-yellow-200">{t('dashboard.schemaError.body')}</p>
+            
+            <div className="space-y-1">
+                <p className="font-semibold text-xs text-yellow-800 dark:text-yellow-300"><Trans i18nKey="dashboard.rlsSolution.step1" components={{ 1: <strong/> }} /></p>
+                <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg p-2">
+                    <button onClick={handleCopy} className="absolute top-2 right-2 rtl:right-auto rtl:left-2 bg-gray-200 dark:bg-gray-700 text-xs font-semibold px-2 py-1 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600">
+                        {copied ? t('dashboard.rlsSolution.copied') : t('dashboard.rlsSolution.copy')}
+                    </button>
+                    <pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-all overflow-x-auto">
+                        <code>{fullSQLScript}</code>
+                    </pre>
+                </div>
+            </div>
+            <p className="text-xs text-yellow-700 dark:text-yellow-200"><Trans i18nKey="dashboard.rlsSolution.step2" components={{ 1: <a href={sqlEditorLink} target="_blank" rel="noopener noreferrer" className="font-bold underline"/> }} /></p>
+             <p className="text-xs text-yellow-700 dark:text-yellow-200">{t('dashboard.rlsSolution.step4')}</p>
+        </div>
+    );
+};
+
+
+export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpdate, schemaNeedsFix, projectRef }) => {
     const { t } = useTranslation();
     const [isEditingHeight, setIsEditingHeight] = useState(false);
     const [heightCm, setHeightCm] = useState(profile.height || '');
@@ -372,71 +413,77 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
                 <div className="space-y-1">
                     <h3 className="text-lg font-bold text-text-primary dark:text-gray-100 text-center">{t('bmiCard.goals.title')}</h3>
                     
-                    {goals.map((goal, index) => {
-                        const isAchieved = latestWeight && goal.value && ((startWeight || 0) > goal.value ? latestWeight <= goal.value : latestWeight >= goal.value);
-                        const isActive = activeGoalInfo?.key === goal.key;
-                        const isEditingThis = editingGoalKey === goal.key;
+                    {schemaNeedsFix ? (
+                        <InlineSchemaFixGuide projectRef={projectRef} />
+                    ) : (
+                    <>
+                        {goals.map((goal, index) => {
+                            const isAchieved = latestWeight && goal.value && ((startWeight || 0) > goal.value ? latestWeight <= goal.value : latestWeight >= goal.value);
+                            const isActive = activeGoalInfo?.key === goal.key;
+                            const isEditingThis = editingGoalKey === goal.key;
 
-                        return (
-                            <React.Fragment key={goal.key}>
-                                <div className="flex items-center gap-4">
-                                    <div className="flex flex-col items-center">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${isAchieved ? 'bg-green-500' : isActive ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}>
-                                            {isAchieved ? '✓' : isActive ? '🎯' : '🏁'}
+                            return (
+                                <React.Fragment key={goal.key}>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex flex-col items-center">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${isAchieved ? 'bg-green-500' : isActive ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                                                {isAchieved ? '✓' : isActive ? '🎯' : '🏁'}
+                                            </div>
+                                        </div>
+                                        <div className="flex-grow">
+                                            <div className="text-sm font-semibold text-text-secondary dark:text-gray-400">{goal.label}</div>
+                                            {isEditingThis ? (
+                                                <div className="flex items-center gap-2">
+                                                    <input type="number" step="0.1" value={goalWeightInput} onChange={(e) => setGoalWeightInput(e.target.value)} className="w-24 px-2 py-1 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" autoFocus onKeyDown={(e) => e.key === 'Enter' && handleGoalSave()} />
+                                                    <span className="text-text-secondary dark:text-gray-400">{weightUnit}</span>
+                                                    <button onClick={handleGoalSave} className="text-green-500 hover:text-green-700">✓</button>
+                                                    <button onClick={() => setEditingGoalKey(null)} className="text-red-500 hover:text-red-700">×</button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    {goal.value ? (
+                                                        <span className="text-lg font-bold text-text-primary dark:text-gray-200">{displayWeight(goal.value)}</span>
+                                                    ) : null}
+                                                    <button onClick={() => handleEditGoal(goal.key, goal.value)} className="text-text-secondary dark:text-gray-400 hover:text-primary">
+                                                        {goal.value ? t('bmiCard.goals.edit') : t('bmiCard.goals.set')}
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex-grow">
-                                        <div className="text-sm font-semibold text-text-secondary dark:text-gray-400">{goal.label}</div>
-                                        {isEditingThis ? (
-                                            <div className="flex items-center gap-2">
-                                                <input type="number" step="0.1" value={goalWeightInput} onChange={(e) => setGoalWeightInput(e.target.value)} className="w-24 px-2 py-1 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" autoFocus onKeyDown={(e) => e.key === 'Enter' && handleGoalSave()} />
-                                                <span className="text-text-secondary dark:text-gray-400">{weightUnit}</span>
-                                                <button onClick={handleGoalSave} className="text-green-500 hover:text-green-700">✓</button>
-                                                <button onClick={() => setEditingGoalKey(null)} className="text-red-500 hover:text-red-700">×</button>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center gap-2">
-                                                {goal.value ? (
-                                                    <span className="text-lg font-bold text-text-primary dark:text-gray-200">{displayWeight(goal.value)}</span>
-                                                ) : null}
-                                                <button onClick={() => handleEditGoal(goal.key, goal.value)} className="text-text-secondary dark:text-gray-400 hover:text-primary">
-                                                    {goal.value ? t('bmiCard.goals.edit') : t('bmiCard.goals.set')}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                {index < goals.length - 1 && (
-                                    <div className="h-6 w-8 flex justify-center">
-                                        <div className="border-l-2 border-dashed border-gray-300 dark:border-gray-600 h-full"></div>
-                                    </div>
-                                )}
-                            </React.Fragment>
-                        )
-                    })}
+                                    {index < goals.length - 1 && (
+                                        <div className="h-6 w-8 flex justify-center">
+                                            <div className="border-l-2 border-dashed border-gray-300 dark:border-gray-600 h-full"></div>
+                                        </div>
+                                    )}
+                                </React.Fragment>
+                            )
+                        })}
+
+                        {weightToGo !== null && (
+                            <div className="text-center">
+                                <p className="text-text-secondary dark:text-gray-400">
+                                    <span className="font-bold text-lg text-primary">{displayWeight(Math.abs(weightToGo))}</span> {t('bmiCard.goals.toGo')}
+                                </p>
+                            </div>
+                        )}
+                        
+                        {activeGoalInfo?.isAchieved && (
+                            <p className="text-center font-semibold text-green-500">{t('bmiCard.goals.allGoalsReached')}</p>
+                        )}
+
+
+                        {progressBarInfo && (
+                             <GoalProgressBar
+                                startWeight={progressBarInfo.startWeight}
+                                currentWeight={progressBarInfo.currentWeight}
+                                goalWeight={progressBarInfo.goalWeight}
+                                weightUnit={weightUnit}
+                            />
+                        )}
+                    </>
+                    )}
                 </div>
-
-                {weightToGo !== null && (
-                    <div className="text-center">
-                        <p className="text-text-secondary dark:text-gray-400">
-                            <span className="font-bold text-lg text-primary">{displayWeight(Math.abs(weightToGo))}</span> {t('bmiCard.goals.toGo')}
-                        </p>
-                    </div>
-                )}
-                
-                {activeGoalInfo?.isAchieved && (
-                    <p className="text-center font-semibold text-green-500">{t('bmiCard.goals.allGoalsReached')}</p>
-                )}
-
-
-                {progressBarInfo && (
-                     <GoalProgressBar
-                        startWeight={progressBarInfo.startWeight}
-                        currentWeight={progressBarInfo.currentWeight}
-                        goalWeight={progressBarInfo.goalWeight}
-                        weightUnit={weightUnit}
-                    />
-                )}
                 
                  <div className="space-y-3 pt-2">
                     <h3 className="text-sm font-semibold text-text-secondary dark:text-gray-400 text-center">{t('bmiCard.units.title')}</h3>
