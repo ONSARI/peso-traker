@@ -502,7 +502,7 @@ const App: React.FC = () => {
     
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, name, height, dob, weight_unit, height_unit, goal_weight_1, goal_weight_2, goal_weight_final')
       .eq('id', currentUser.id)
       .single();
 
@@ -560,7 +560,7 @@ const App: React.FC = () => {
       .from('profiles')
       .update(updates)
       .eq('id', user.id)
-      .select()
+      .select('id, name, height, dob, weight_unit, height_unit, goal_weight_1, goal_weight_2, goal_weight_final')
       .single();
 
     if (error) {
