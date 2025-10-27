@@ -18,6 +18,65 @@ import { getCountriesByLanguage } from './countries';
 
 // --- Components ---
 
+interface PhoneInputProps {
+    phone: string;
+    setPhone: (value: string) => void;
+    selectedCountry: Country | null;
+    setSelectedCountry: (country: Country) => void;
+    countries: Country[];
+    countrySearch: string;
+    setCountrySearch: (value: string) => void;
+    isCountryDropdownOpen: boolean;
+    setIsCountryDropdownOpen: (isOpen: boolean) => void;
+    countryDropdownRef: React.RefObject<HTMLDivElement>;
+}
+
+const PhoneInput: React.FC<PhoneInputProps> = ({
+    phone, setPhone,
+    selectedCountry, setSelectedCountry,
+    countries,
+    countrySearch, setCountrySearch,
+    isCountryDropdownOpen, setIsCountryDropdownOpen,
+    countryDropdownRef
+}) => {
+    const { t } = useTranslation();
+
+    const filteredCountries = countries.filter(c => 
+      c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+      c.dial_code.includes(countrySearch)
+    );
+
+    return (
+        <div className="flex w-full border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-primary dark:border-gray-600">
+            <div ref={countryDropdownRef} className="relative">
+                 <button type="button" onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)} className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-l-lg">
+                    <span>{selectedCountry?.flag}</span>
+                    <span className="text-sm text-text-secondary dark:text-gray-400">{selectedCountry?.dial_code}</span>
+                 </button>
+                 {isCountryDropdownOpen && (
+                     <div className="absolute bottom-full mb-2 w-72 bg-card dark:bg-gray-700 rounded-lg shadow-lg border dark:border-gray-600 z-10">
+                         <div className="p-2">
+                            <input type="text" value={countrySearch} onChange={e => setCountrySearch(e.target.value)} placeholder={t('auth.searchCountryPlaceholder')} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-600 dark:text-white"/>
+                         </div>
+                         <ul className="max-h-60 overflow-y-auto">
+                             {filteredCountries.map(country => (
+                                 <li key={country.code}>
+                                     <button type="button" onClick={() => { setSelectedCountry(country); setIsCountryDropdownOpen(false); setCountrySearch(''); }} className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <span className="text-xl">{country.flag}</span>
+                                        <span className="flex-grow text-text-primary dark:text-gray-200">{country.name}</span>
+                                        <span className="text-text-secondary dark:text-gray-400">{country.dial_code}</span>
+                                     </button>
+                                 </li>
+                             ))}
+                         </ul>
+                     </div>
+                 )}
+            </div>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('auth.phonePlaceholder')} required className="w-full px-4 py-2 border-0 bg-transparent focus:ring-0 dark:text-white" />
+        </div>
+    );
+};
+
 const Auth: React.FC = () => {
     const { t, i18n } = useTranslation();
     const [loading, setLoading] = useState(false);
@@ -194,41 +253,6 @@ const Auth: React.FC = () => {
         setOtp('');
     };
 
-    const filteredCountries = countries.filter(c => 
-      c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
-      c.dial_code.includes(countrySearch)
-    );
-
-    const PhoneInput = () => (
-        <div className="flex w-full border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-primary dark:border-gray-600">
-            <div ref={countryDropdownRef} className="relative">
-                 <button type="button" onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)} className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-l-lg">
-                    <span>{selectedCountry?.flag}</span>
-                    <span className="text-sm text-text-secondary dark:text-gray-400">{selectedCountry?.dial_code}</span>
-                 </button>
-                 {isCountryDropdownOpen && (
-                     <div className="absolute bottom-full mb-2 w-72 bg-card dark:bg-gray-700 rounded-lg shadow-lg border dark:border-gray-600 z-10">
-                         <div className="p-2">
-                            <input type="text" value={countrySearch} onChange={e => setCountrySearch(e.target.value)} placeholder={t('auth.searchCountryPlaceholder')} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-600 dark:text-white"/>
-                         </div>
-                         <ul className="max-h-60 overflow-y-auto">
-                             {filteredCountries.map(country => (
-                                 <li key={country.code}>
-                                     <button type="button" onClick={() => { setSelectedCountry(country); setIsCountryDropdownOpen(false); setCountrySearch(''); }} className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                        <span className="text-xl">{country.flag}</span>
-                                        <span className="flex-grow text-text-primary dark:text-gray-200">{country.name}</span>
-                                        <span className="text-text-secondary dark:text-gray-400">{country.dial_code}</span>
-                                     </button>
-                                 </li>
-                             ))}
-                         </ul>
-                     </div>
-                 )}
-            </div>
-            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('auth.phonePlaceholder')} required className="w-full px-4 py-2 border-0 bg-transparent focus:ring-0 dark:text-white" />
-        </div>
-    );
-    
     const renderOtpScreen = (onSubmit: (e: React.FormEvent) => void, titleKey: string, instructionKey: string, buttonKey: string, verifyingKey: string) => (
         <>
             <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t(titleKey)}</h2>
@@ -260,7 +284,18 @@ const Auth: React.FC = () => {
                         <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.forgotPasswordTitle')}</h2>
                         <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.forgotPasswordInstruction')}</p>
                         <form noValidate onSubmit={(e) => handlePhoneAuth(e, 'reset')} className="flex flex-col items-center justify-center gap-4">
-                            <PhoneInput />
+                            <PhoneInput
+                                phone={phone}
+                                setPhone={setPhone}
+                                selectedCountry={selectedCountry}
+                                setSelectedCountry={setSelectedCountry}
+                                countries={countries}
+                                countrySearch={countrySearch}
+                                setCountrySearch={setCountrySearch}
+                                isCountryDropdownOpen={isCountryDropdownOpen}
+                                setIsCountryDropdownOpen={setIsCountryDropdownOpen}
+                                countryDropdownRef={countryDropdownRef}
+                            />
                             <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
                                 {loading ? t('auth.sendingCodeButton') : t('auth.sendResetCodeButton')}
                             </button>
@@ -297,7 +332,18 @@ const Auth: React.FC = () => {
                                 )}
                             </div>
 
-                           <PhoneInput />
+                           <PhoneInput
+                                phone={phone}
+                                setPhone={setPhone}
+                                selectedCountry={selectedCountry}
+                                setSelectedCountry={setSelectedCountry}
+                                countries={countries}
+                                countrySearch={countrySearch}
+                                setCountrySearch={setCountrySearch}
+                                isCountryDropdownOpen={isCountryDropdownOpen}
+                                setIsCountryDropdownOpen={setIsCountryDropdownOpen}
+                                countryDropdownRef={countryDropdownRef}
+                           />
                             
                             <p className="text-xs text-text-secondary dark:text-gray-400 mt-1 text-left rtl:text-right">{t('auth.phoneVerificationNotice')}</p>
 
@@ -317,7 +363,18 @@ const Auth: React.FC = () => {
                         <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.loginTitle')}</h2>
                         <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.loginInstruction')}</p>
                         <form noValidate onSubmit={(e) => handlePhoneAuth(e, 'login')} className="flex flex-col items-center justify-center gap-4">
-                            <PhoneInput />
+                             <PhoneInput
+                                phone={phone}
+                                setPhone={setPhone}
+                                selectedCountry={selectedCountry}
+                                setSelectedCountry={setSelectedCountry}
+                                countries={countries}
+                                countrySearch={countrySearch}
+                                setCountrySearch={setCountrySearch}
+                                isCountryDropdownOpen={isCountryDropdownOpen}
+                                setIsCountryDropdownOpen={setIsCountryDropdownOpen}
+                                countryDropdownRef={countryDropdownRef}
+                            />
                              <button onClick={() => switchView('forgotPassword')} type="button" className="text-sm text-text-secondary dark:text-gray-400 hover:text-primary hover:underline self-end">
                                 {t('auth.forgotPasswordLink')}
                             </button>
