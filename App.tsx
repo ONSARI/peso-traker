@@ -13,7 +13,6 @@ import { TrophyIcon, RocketIcon, StarIcon, ShieldCheckIcon } from './components/
 import type { Country } from './countries';
 import { getCountriesByLanguage } from './countries';
 import { useTranslation, Trans } from 'react-i18next';
-import { LanguageSwitcher } from './components/LanguageSwitcher';
 import useLocalStorage from './hooks/useLocalStorage';
 
 
@@ -40,13 +39,9 @@ const Auth: React.FC = () => {
     const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>('cm');
     const [phone, setPhone] = useState(''); // Stores the full phone number for OTP verification
     const [localPhone, setLocalPhone] = useState(''); // Stores just the local part of the number
-    const [countries, setCountries] = useState<Country[]>(getCountriesByLanguage(i18n.language));
+    const [countries, setCountries] = useState<Country[]>(getCountriesByLanguage('es'));
     const [selectedCountry, setSelectedCountry] = useState<Country>(countries.find(c => c.code === 'ES') || countries[0]);
     const [phoneOtp, setPhoneOtp] = useState('');
-    
-    useEffect(() => {
-        setCountries(getCountriesByLanguage(i18n.language));
-    }, [i18n.language]);
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -457,7 +452,6 @@ const Header: React.FC<{ name: string; onNameChange: (name: string) => void; onS
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15.59L7.41 14l1.41-1.41L11 15.17l4.59-4.59L17 12l-6 6z"/>
                     </svg>
                     <h1 className="text-2xl md:text-3xl font-bold text-primary">PesoZen</h1>
-                    <LanguageSwitcher />
                 </div>
 
                 <div className="flex items-center gap-4 rtl:flex-row-reverse">
