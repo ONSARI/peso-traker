@@ -1,37 +1,31 @@
-import React, { useMemo } from 'react';
-import type { WeightEntry } from '../types';
+import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
 
-interface WeightChartProps {
-    data: WeightEntry[];
-    weightUnit: 'kg' | 'lbs';
+interface BmiChartData {
+    date: string;
+    bmi: number;
+}
+
+interface BMIChartProps {
+    data: BmiChartData[];
     theme: 'light' | 'dark';
 }
 
-export const WeightChart: React.FC<WeightChartProps> = ({ data, weightUnit, theme }) => {
+export const BMIChart: React.FC<BMIChartProps> = ({ data, theme }) => {
     const { t, i18n } = useTranslation();
 
-    const chartData = useMemo(() => {
-        if (weightUnit === 'lbs') {
-            return data.map(entry => ({ ...entry, weight: entry.weight * 2.20462 }));
-        }
-        return data;
-    }, [data, weightUnit]);
-
-    if (chartData.length < 2) {
+    if (data.length < 2) {
         return (
             <div className="flex items-center justify-center h-full min-h-[300px] text-text-secondary dark:text-gray-400">
-                <p>{t('charts.noDataWeight')}</p>
+                <p>{t('charts.noDataBmi')}</p>
             </div>
         );
     }
     
-    const weights = chartData.map(d => d.weight);
-    const yDomainMin = Math.floor(Math.min(...weights) - 2);
-    const yDomainMax = Math.ceil(Math.max(...weights) + 2);
-
-    const yAxisLabel = t('charts.yAxisLabelWeight', { unit: weightUnit });
+    const bmis = data.map(d => d.bmi);
+    const yDomainMin = Math.floor(Math.min(...bmis) - 1);
+    const yDomainMax = Math.ceil(Math.max(...bmis) + 1);
 
     const textColor = theme === 'dark' ? '#9ca3af' : '#64748b';
     const gridColor = theme === 'dark' ? '#374151' : '#e0e0e0';
@@ -43,11 +37,11 @@ export const WeightChart: React.FC<WeightChartProps> = ({ data, weightUnit, them
         <div style={{ width: '100%', height: 350 }}>
             <ResponsiveContainer>
                 <LineChart
-                    data={chartData}
+                    data={data}
                     margin={{
                         top: 5,
                         right: 20,
-                        left: 20,
+                        left: 10,
                         bottom: 5,
                     }}
                 >
@@ -59,10 +53,9 @@ export const WeightChart: React.FC<WeightChartProps> = ({ data, weightUnit, them
                     />
                     <YAxis 
                         domain={[yDomainMin, yDomainMax]} 
-                        tick={{ fill: textColor }} 
-                        unit={` ${weightUnit}`}
-                        label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', fill: textColor }}
-                    />
+                        tick={{ fill: textColor }}
+                        label={{ value: t('charts.yAxisLabelBmi'), angle: -90, position: 'insideLeft', fill: textColor }}
+                     />
                     <Tooltip
                         contentStyle={{
                             backgroundColor: tooltipBg,
@@ -70,10 +63,10 @@ export const WeightChart: React.FC<WeightChartProps> = ({ data, weightUnit, them
                             borderRadius: '0.5rem',
                         }}
                         labelStyle={{ color: tooltipLabelColor, fontWeight: 'bold' }}
-                        formatter={(value: number) => [`${value.toFixed(1)} ${weightUnit}`, null]}
+                        formatter={(value: number) => [value.toFixed(1), null]}
                         labelFormatter={(label: string) => {
-                            if (!label) return '';
-                            return new Date(`${label}T00:00:00`).toLocaleDateString(i18n.language, {
+                             if (!label) return '';
+                             return new Date(`${label}T00:00:00`).toLocaleDateString(i18n.language, {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric',
@@ -82,7 +75,7 @@ export const WeightChart: React.FC<WeightChartProps> = ({ data, weightUnit, them
                         }}
                     />
                     <Legend />
-                    <Line type="monotone" dataKey="weight" name={t('charts.weightLabel')} stroke="#14b8a6" strokeWidth={3} activeDot={{ r: 8 }} dot={{ r: 4, fill: '#14b8a6' }} />
+                    <Line type="monotone" dataKey="bmi" name={t('charts.bmiLabel')} stroke="#64748b" strokeWidth={3} activeDot={{ r: 8 }} dot={{ r: 4, fill: '#64748b' }} />
                 </LineChart>
             </ResponsiveContainer>
         </div>

@@ -1,16 +1,331 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useLocalStorage } from './hooks/useLocalStorage';
-import type { WeightEntry, User } from './types';
+import type { User, Session } from '@supabase/supabase-js';
+import type { UserProfile, WeightEntry, Achievement } from './types';
+import { supabase } from './supabaseClient';
 import { BMICard } from './components/BMICard';
 import { WeightChart } from './components/WeightChart';
+import { BMIChart } from './components/BMIChart';
 import { WeightForm } from './components/WeightForm';
 import { WeightHistory } from './components/WeightHistory';
-import { countries } from './countries';
+import { Achievements } from './components/Achievements';
+import { AchievementModal } from './components/AchievementModal';
+import { TrophyIcon, RocketIcon, StarIcon, ShieldCheckIcon } from './components/icons';
+import type { Country } from './countries';
+import { getCountriesByLanguage } from './countries';
+import { useTranslation, Trans } from 'react-i18next';
+import { LanguageSwitcher } from './components/LanguageSwitcher';
+import useLocalStorage from './hooks/useLocalStorage';
 
-// Header Component with Name Personalization
-const Header: React.FC<{ name: string; onNameChange: (name: string) => void }> = ({ name, onNameChange }) => {
+
+// --- Components ---
+
+const Auth: React.FC = () => {
+    const { t, i18n } = useTranslation();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [message, setMessage] = useState('');
+
+    const [view, setView] = useState<'login' | 'signup' | 'verifyPhone'>('login');
+    const [loginLocalPhone, setLoginLocalPhone] = useState('');
+
+    const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [dob, setDob] = useState('');
+    const [height, setHeight] = useState(''); // For cm
+    const [heightFt, setHeightFt] = useState(''); // For feet
+    const [heightIn, setHeightIn] = useState(''); // For inches
+    const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>('cm');
+    const [phone, setPhone] = useState(''); // Stores the full phone number for OTP verification
+    const [localPhone, setLocalPhone] = useState(''); // Stores just the local part of the number
+    const [countries, setCountries] = useState<Country[]>(getCountriesByLanguage(i18n.language));
+    const [selectedCountry, setSelectedCountry] = useState<Country>(countries.find(c => c.code === 'ES') || countries[0]);
+    const [phoneOtp, setPhoneOtp] = useState('');
+    
+    useEffect(() => {
+        setCountries(getCountriesByLanguage(i18n.language));
+    }, [i18n.language]);
+
+    const handleSignUp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        setMessage('');
+
+        const fullPhoneNumber = `${selectedCountry.dial_code}${localPhone}`;
+        setPhone(fullPhoneNumber);
+
+        let heightInCm: number;
+        if (heightUnit === 'cm') {
+            heightInCm = parseFloat(height);
+        } else {
+            const feet = parseFloat(heightFt) || 0;
+            const inches = parseFloat(heightIn) || 0;
+            heightInCm = (feet * 12 + inches) * 2.54;
+        }
+
+        if (isNaN(heightInCm) || heightInCm <= 0) {
+            setError(t('auth.invalidHeightError'));
+            setLoading(false);
+            return;
+        }
+
+        const { error } = await supabase.auth.signUp({
+            phone: fullPhoneNumber,
+            password,
+            options: {
+                data: {
+                    name,
+                    dob,
+                    height: heightInCm,
+                    height_unit: heightUnit,
+                    weight_unit: 'kg' // Default weight unit
+                },
+            },
+        });
+
+        if (error) {
+            setError(error.message);
+            setLoading(false);
+            return;
+        }
+
+        setMessage(t('auth.otpSuccessMessage'));
+        setView('verifyPhone');
+        setLoading(false);
+    };
+    
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        
+        const credentials = { phone: `${selectedCountry.dial_code}${loginLocalPhone}`, password };
+
+        const { error } = await supabase.auth.signInWithPassword(credentials);
+        if (error) {
+            setError(error.message);
+        }
+        setLoading(false);
+    };
+
+    const handleVerifyPhoneOtp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+
+        const { data, error } = await supabase.auth.verifyOtp({ phone, token: phoneOtp, type: 'sms' });
+
+        if (error) {
+            setError(error.message);
+            setLoading(false);
+            return;
+        }
+
+        if (data.user) {
+            const { name, dob, height } = data.user.user_metadata;
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .insert({
+                    id: data.user.id,
+                    name,
+                    dob,
+                    height,
+                });
+
+            if (profileError) {
+                setError(t('auth.profileCreationError', { message: profileError.message }));
+                await supabase.auth.signOut();
+                setLoading(false);
+                return;
+            }
+        }
+        setLoading(false);
+    };
+
+    const switchView = (newView: 'login' | 'signup') => {
+        setView(newView);
+        setError(null);
+        setMessage('');
+        setPassword('');
+        setLoginLocalPhone('');
+    }
+
+    const renderContent = () => {
+        switch (view) {
+            case 'verifyPhone':
+                return (
+                    <>
+                        <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.verifyTitle')}</h2>
+                        <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.verifyInstruction', { phone })}</p>
+                        <form noValidate onSubmit={handleVerifyPhoneOtp} className="flex flex-col items-center justify-center gap-4">
+                            <input type="tel" value={phoneOtp} onChange={(e) => setPhoneOtp(e.target.value)} placeholder="123456" required maxLength={6} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary text-center tracking-[1rem] dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                            <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
+                                {loading ? t('auth.verifyingButton') : t('auth.verifyButton')}
+                            </button>
+                        </form>
+                         <button onClick={() => setView('signup')} className="text-sm text-primary hover:underline mt-4">
+                            {t('auth.backToSignup')}
+                        </button>
+                    </>
+                );
+            case 'signup':
+                return (
+                    <>
+                        <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.signupTitle')}</h2>
+                        <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.signupInstruction')}</p>
+                        <form noValidate onSubmit={handleSignUp} className="flex flex-col items-center justify-center gap-4">
+                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('auth.namePlaceholder')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                            <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label={t('auth.dobLabel')} />
+                            
+                            <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <label className="text-sm font-medium text-text-secondary dark:text-gray-400">{t('auth.heightUnitLabel')}</label>
+                                    <div className="flex rounded-lg border border-gray-300 p-0.5 dark:border-gray-600">
+                                        <button type="button" onClick={() => setHeightUnit('cm')} className={`px-3 py-1 text-sm rounded-md ${heightUnit === 'cm' ? 'bg-primary text-white' : 'bg-transparent text-text-secondary dark:text-gray-300'}`}>{t('auth.cm')}</button>
+                                        <button type="button" onClick={() => setHeightUnit('ft')} className={`px-3 py-1 text-sm rounded-md ${heightUnit === 'ft' ? 'bg-primary text-white' : 'bg-transparent text-text-secondary dark:text-gray-300'}`}>{t('auth.ft')}</button>
+                                    </div>
+                                </div>
+                                {heightUnit === 'cm' ? (
+                                    <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} placeholder={t('auth.heightPlaceholderCm')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <input type="number" value={heightFt} onChange={(e) => setHeightFt(e.target.value)} placeholder={t('auth.ftPlaceholder')} required className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                                        <input type="number" value={heightIn} onChange={(e) => setHeightIn(e.target.value)} placeholder={t('auth.inPlaceholder')} required className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                                    </div>
+                                )}
+                            </div>
+
+                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('auth.passwordPlaceholder')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                            
+                            <div className="w-full">
+                                <div className="flex rtl:flex-row-reverse">
+                                    <select
+                                        id="country-code"
+                                        value={selectedCountry.code}
+                                        onChange={(e) => {
+                                            const country = countries.find(c => c.code === e.target.value);
+                                            if (country) setSelectedCountry(country);
+                                        }}
+                                        className="bg-gray-100 border border-gray-300 rounded-l-lg rtl:rounded-l-none rtl:rounded-r-lg border-r-0 rtl:border-r rtl:border-l-0 pl-3 pr-4 rtl:pl-4 rtl:pr-3 py-2 text-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+                                        aria-label="Country code"
+                                    >
+                                        {countries.map((country) => (
+                                            <option key={country.code} value={country.code}>
+                                                {country.flag} {country.dial_code}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        id="phone-input"
+                                        type="tel"
+                                        value={localPhone}
+                                        onChange={(e) => setLocalPhone(e.target.value.replace(/[^0-9]/g, ''))}
+                                        placeholder={t('auth.phonePlaceholder')}
+                                        required
+                                        className="w-full px-4 py-2 text-lg border border-gray-300 rounded-r-lg rtl:rounded-r-none rtl:rounded-l-lg focus:ring-2 focus:ring-primary focus:border-transparent z-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    />
+                                </div>
+                                <p className="text-xs text-text-secondary dark:text-gray-400 mt-1 text-left rtl:text-right">{t('auth.phoneVerificationNotice')}</p>
+                            </div>
+
+                            <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
+                                {loading ? t('auth.signingUpButton') : t('auth.signupButton')}
+                            </button>
+                        </form>
+                        <button onClick={() => switchView('login')} className="text-sm text-primary hover:underline mt-4">
+                            {t('auth.switchToLogin')}
+                        </button>
+                    </>
+                );
+            case 'login':
+            default:
+                return (
+                    <>
+                        <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.loginTitle')}</h2>
+                        <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.loginInstruction')}</p>
+                        <form noValidate onSubmit={handleLogin} className="flex flex-col items-center justify-center gap-4">
+                            <div className="w-full">
+                                <div className="flex rtl:flex-row-reverse">
+                                    <select
+                                        id="country-code-login"
+                                        value={selectedCountry.code}
+                                        onChange={(e) => {
+                                            const country = countries.find(c => c.code === e.target.value);
+                                            if (country) setSelectedCountry(country);
+                                        }}
+                                        className="bg-gray-100 border border-gray-300 rounded-l-lg rtl:rounded-l-none rtl:rounded-r-lg border-r-0 rtl:border-r rtl:border-l-0 pl-3 pr-4 rtl:pl-4 rtl:pr-3 py-2 text-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+                                        aria-label="Country code"
+                                    >
+                                        {countries.map((country) => (
+                                            <option key={country.code} value={country.code}>
+                                                {country.flag} {country.dial_code}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        id="phone-input-login"
+                                        type="tel"
+                                        value={loginLocalPhone}
+                                        onChange={(e) => setLoginLocalPhone(e.target.value.replace(/[^0-9]/g, ''))}
+                                        placeholder={t('auth.loginPhonePlaceholder')}
+                                        required
+                                        className="w-full px-4 py-2 text-lg border border-gray-300 rounded-r-lg rtl:rounded-r-none rtl:rounded-l-lg focus:ring-2 focus:ring-primary focus:border-transparent z-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    />
+                                </div>
+                            </div>
+                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('auth.passwordPlaceholder')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                            <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
+                                {loading ? t('auth.loggingInButton') : t('auth.loginButton')}
+                            </button>
+                        </form>
+                        <button onClick={() => switchView('signup')} className="text-sm text-primary hover:underline mt-4">
+                           {t('auth.switchToSignup')}
+                        </button>
+                    </>
+                );
+        }
+    }
+
+
+    return (
+        <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-screen">
+            <div className="bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center max-w-md mx-auto w-full">
+                {message && <p className="bg-green-100 text-green-700 p-3 rounded-lg mb-4 dark:bg-green-900/50 dark:text-green-300">{message}</p>}
+                {error && <p className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 dark:bg-red-900/50 dark:text-red-300">{error}</p>}
+                {renderContent()}
+            </div>
+        </main>
+    );
+};
+
+const DarkModeToggle: React.FC<{ theme: 'light' | 'dark'; onToggle: () => void }> = ({ theme, onToggle }) => {
+  return (
+    <button
+      onClick={onToggle}
+      className="p-2 rounded-full text-text-secondary hover:text-primary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+      aria-label="Toggle dark mode"
+    >
+      {theme === 'dark' ? (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      )}
+    </button>
+  );
+};
+
+const Header: React.FC<{ name: string; onNameChange: (name: string) => void; onSignOut: () => void; theme: 'light' | 'dark'; onThemeToggle: () => void; }> = ({ name, onNameChange, onSignOut, theme, onThemeToggle }) => {
+    const { t } = useTranslation();
     const [isEditingName, setIsEditingName] = useState(false);
     const [newName, setNewName] = useState(name || '');
+
+    useEffect(() => {
+        setNewName(name || '');
+    }, [name]);
 
     const handleNameSave = () => {
         if (newName.trim()) {
@@ -20,324 +335,416 @@ const Header: React.FC<{ name: string; onNameChange: (name: string) => void }> =
     };
 
     return (
-        <header className="bg-card shadow-md sticky top-0 z-10">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                <div className="flex items-center gap-3">
+        <header className="bg-card dark:bg-gray-800 shadow-md sticky top-0 z-10">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center rtl:flex-row-reverse">
+                <div className="flex items-center gap-3 rtl:flex-row-reverse">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15.59L7.41 14l1.41-1.41L11 15.17l4.59-4.59L17 12l-6 6z"/>
                     </svg>
+                    <h1 className="text-2xl md:text-3xl font-bold text-primary">PesoZen</h1>
+                    <LanguageSwitcher />
+                </div>
+
+                <div className="flex items-center gap-4 rtl:flex-row-reverse">
                     {isEditingName ? (
                         <div className="flex items-center gap-2">
-                           <input
-                                type="text"
-                                value={newName}
-                                onChange={(e) => setNewName(e.target.value)}
-                                className="px-2 py-1 border border-gray-300 rounded-md text-2xl font-bold text-primary"
-                                onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
-                                autoFocus
+                           <input 
+                                type="text" 
+                                value={newName} 
+                                onChange={(e) => setNewName(e.target.value)} 
+                                className="px-2 py-1 border border-gray-300 rounded-md text-text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
+                                onKeyDown={(e) => e.key === 'Enter' && handleNameSave()} 
+                                autoFocus 
                             />
                             <button onClick={handleNameSave} className="text-green-500 hover:text-green-700 p-1">✓</button>
                             <button onClick={() => { setIsEditingName(false); setNewName(name || ''); }} className="text-red-500 hover:text-red-700 p-1">×</button>
                         </div>
                     ) : (
                         <div className="flex items-center gap-2">
-                            <h1 className="text-2xl md:text-3xl font-bold text-primary">
-                                {`${name}'s Tracker`}
-                            </h1>
-                             <button onClick={() => setIsEditingName(true)} className="text-text-secondary hover:text-primary mt-1" aria-label="Edit name">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" />
-                                </svg>
+                            <span className="text-text-secondary dark:text-gray-400 hidden sm:inline">{t('header.greeting', { name })}</span>
+                             <button onClick={() => setIsEditingName(true)} className="text-text-secondary dark:text-gray-400 hover:text-primary" aria-label={t('header.editName')}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" /></svg>
                             </button>
                         </div>
                     )}
+                    <DarkModeToggle theme={theme} onToggle={onThemeToggle} />
+                     <button onClick={onSignOut} className="bg-secondary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-80 transition-colors">{t('header.logout')}</button>
                 </div>
-                <p className="text-text-secondary mt-1">Monitor your progress towards a healthier you.</p>
             </div>
         </header>
     );
 };
 
-
-const VerificationScreen: React.FC<{
-    pendingUser: User;
-    onVerify: (user: User) => void;
-    onBack: () => void;
-}> = ({ pendingUser, onVerify, onBack }) => {
-    const [codesSent, setCodesSent] = useState(false);
-    const [isSending, setIsSending] = useState(false);
-    const [error, setError] = useState('');
-    const [resendTimer, setResendTimer] = useState(0);
-
-    useEffect(() => {
-        let timerId: number;
-        if (resendTimer > 0) {
-            timerId = window.setTimeout(() => setResendTimer(resendTimer - 1), 1000);
-        }
-        return () => clearTimeout(timerId);
-    }, [resendTimer]);
-
-    const handleSendCodes = () => {
-        setIsSending(true);
-        setError('');
-        // Simulate API call to send codes
-        setTimeout(() => {
-            setIsSending(false);
-            setCodesSent(true);
-            setResendTimer(30); // Start 30-second timer
-        }, 1500);
-    };
-    
-    const handleVerify = (e: React.FormEvent) => {
-        e.preventDefault();
-        const form = e.target as HTMLFormElement;
-        const emailCode = (form.elements.namedItem('emailCode') as HTMLInputElement).value;
-        const phoneCode = (form.elements.namedItem('phoneCode') as HTMLInputElement).value;
-
-        // For demo: correct code is "123456". In a real app, this is checked on the backend.
-        if (emailCode === '123456' && phoneCode === '123456') {
-            onVerify(pendingUser);
-        } else {
-            setError('Los códigos no son válidos. Inténtalo de nuevo.');
-        }
-    };
-
-    return (
-         <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-screen">
-            <div className="bg-card p-8 rounded-lg shadow-lg text-center max-w-lg mx-auto w-full">
-                <h2 className="text-2xl font-bold text-text-primary mb-2">Verifica tu Identidad</h2>
-                
-                {!codesSent ? (
-                    <>
-                        <p className="text-text-secondary mb-6">Presiona el botón para enviar códigos de verificación a {pendingUser.email} y {pendingUser.phone}.</p>
-                        <div className="flex flex-col items-center justify-center gap-4">
-                            <button 
-                                onClick={handleSendCodes}
-                                disabled={isSending}
-                                className="w-full bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 flex items-center justify-center gap-2 disabled:bg-gray-400"
-                            >
-                                {isSending && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
-                                {isSending ? 'Enviando...' : 'Enviar Códigos de Verificación'}
-                            </button>
-                            <button type="button" onClick={onBack} className="w-full bg-gray-200 text-text-secondary font-bold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors duration-300">
-                                Volver
-                            </button>
-                        </div>
-                    </>
-                ) : (
-                    <>
-                         <p className="text-text-secondary mb-6">
-                            Ingresa los códigos que enviamos a tu correo y teléfono. (Pista: es 123456)
-                        </p>
-                        <form onSubmit={handleVerify} className="flex flex-col items-center justify-center gap-4">
-                            <input
-                                type="text" name="emailCode" placeholder="Código de correo electrónico" required
-                                className={`w-full px-4 py-2 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition`} />
-                            <input
-                                type="text" name="phoneCode" placeholder="Código de teléfono" required
-                                className={`w-full px-4 py-2 border ${error ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition`} />
-                            
-                            {error && <p className="text-red-500 text-sm mt-1 text-left w-full">{error}</p>}
-
-                            <button type="submit" className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2">
-                                Verificar y Continuar
-                            </button>
-                             <button 
-                                type="button" 
-                                onClick={handleSendCodes}
-                                disabled={resendTimer > 0 || isSending}
-                                className="w-full text-sm text-primary hover:underline disabled:text-gray-400 disabled:no-underline"
-                            >
-                                {resendTimer > 0 ? `Reenviar en ${resendTimer}s` : 'Reenviar códigos'}
-                            </button>
-                        </form>
-                    </>
-                )}
-            </div>
-        </main>
-    );
-};
-
-
-const App: React.FC = () => {
-    const [user, setUser] = useLocalStorage<User | null>('userProfile', null);
-    const [weightEntries, setWeightEntries] = useLocalStorage<WeightEntry[]>('weightEntries', []);
-    const [pendingUser, setPendingUser] = useState<User | null>(null);
-    const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-    const [countryCode, setCountryCode] = useState(countries[0].dial_code);
+const Dashboard: React.FC<{ userProfile: UserProfile, authUser: User, initialWeights: WeightEntry[], theme: 'light' | 'dark', onThemeToggle: () => void }> = ({ userProfile, authUser, initialWeights, theme, onThemeToggle }) => {
+    const { t } = useTranslation();
+    const [profile, setProfile] = useState<UserProfile>({
+        ...userProfile,
+        weight_unit: authUser.user_metadata.weight_unit || 'kg',
+        height_unit: authUser.user_metadata.height_unit || 'cm',
+        goal_weight: authUser.user_metadata.goal_weight || null,
+    });
+    const [weightEntries, setWeightEntries] = useState<WeightEntry[]>(initialWeights);
+    const [activeChart, setActiveChart] = useState<'weight' | 'bmi'>('weight');
 
     const sortedEntries = useMemo(() => {
         return [...weightEntries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }, [weightEntries]);
 
-    const latestWeight = useMemo(() => {
-        return sortedEntries.length > 0 ? sortedEntries[sortedEntries.length - 1].weight : null;
-    }, [sortedEntries]);
-    
-    const addWeightEntry = useCallback((weight: number) => {
-        const today = new Date().toISOString().split('T')[0];
-        const newEntry: WeightEntry = { date: today, weight: weight, id: Date.now() };
+    // --- Achievements Logic ---
+    const ALL_ACHIEVEMENTS: Omit<Achievement, 'Icon'>[] = useMemo(() => [
+        { id: 'FIRST_STEP', titleKey: 'achievements.firstStep.title', descriptionKey: 'achievements.firstStep.description' },
+        { id: 'FIVE_PERCENT', titleKey: 'achievements.fivePercent.title', descriptionKey: 'achievements.fivePercent.description' },
+        { id: 'TEN_PERCENT', titleKey: 'achievements.tenPercent.title', descriptionKey: 'achievements.tenPercent.description' },
+        { id: 'BMI_IMPROVED', titleKey: 'achievements.bmiImproved.title', descriptionKey: 'achievements.bmiImproved.description' },
+        { id: 'GOAL_REACHED', titleKey: 'achievements.goalReached.title', descriptionKey: 'achievements.goalReached.description' },
+    ], []);
 
-        const existingEntryIndex = weightEntries.findIndex(entry => entry.date === today);
-        if (existingEntryIndex !== -1) {
-            const updatedEntries = [...weightEntries];
-            updatedEntries[existingEntryIndex] = newEntry;
-            setWeightEntries(updatedEntries);
-        } else {
-            setWeightEntries(prevEntries => [...prevEntries, newEntry]);
-        }
-    }, [weightEntries, setWeightEntries]);
-
-    const deleteWeightEntry = useCallback((id: number) => {
-        setWeightEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
-    }, [setWeightEntries]);
-
-    const validateRegistrationForm = (data: { name: string; email: string; phone: string; dob: string; height: number }): boolean => {
-        const errors: { [key: string]: string } = {};
-        
-        if (!data.name) errors.name = "El nombre es obligatorio.";
-        if (!data.email) {
-            errors.email = "El correo electrónico es obligatorio.";
-        } else if (!/^\S+@\S+\.\S+$/.test(data.email)) {
-            errors.email = "Por favor, ingresa un correo electrónico válido.";
-        }
-        if (!data.phone) {
-            errors.phone = "El teléfono es obligatorio.";
-        } else if (!/^\d{7,}$/.test(data.phone)) { // Simple validation: at least 7 digits
-            errors.phone = "Por favor, ingresa un número de teléfono válido.";
-        }
-        if (!data.dob) errors.dob = "La fecha de nacimiento es obligatoria.";
-        if (isNaN(data.height) || data.height <= 0) {
-            errors.height = "Por favor, ingresa una altura válida en cm.";
-        }
-
-        setFormErrors(errors);
-        return Object.keys(errors).length === 0;
+    const ICONS_MAP: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
+        FIRST_STEP: TrophyIcon,
+        FIVE_PERCENT: RocketIcon,
+        TEN_PERCENT: RocketIcon,
+        BMI_IMPROVED: ShieldCheckIcon,
+        GOAL_REACHED: StarIcon,
     };
 
+    const getBmiCategoryValue = (bmi: number): number => {
+        if (bmi < 18.5) return 0; // Underweight
+        if (bmi < 25) return 1;  // Normal
+        if (bmi < 30) return 2;  // Overweight
+        return 3; // Obesity
+    };
+    
+    const calculateBMI = (weightKg: number, heightCm: number): number | null => {
+        if (!heightCm || heightCm <= 0 || !weightKg || weightKg <= 0) return null;
+        const heightInMeters = heightCm / 100;
+        return weightKg / (heightInMeters * heightInMeters);
+    }
 
-    // RENDER LOGIC
-    if (user) {
-        // LOGGED IN VIEW (DASHBOARD)
-        return (
-            <>
-                <Header name={user.name} onNameChange={(name) => setUser(prev => prev ? { ...prev, name } : null)} />
-                <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-                        <div className="lg:col-span-1 flex flex-col gap-6 lg:gap-8">
-                            <BMICard height={user.height} weight={latestWeight} onHeightChange={(height) => setUser(prev => prev ? { ...prev, height } : null)} />
-                            <WeightForm onAddEntry={addWeightEntry} latestWeight={latestWeight}/>
-                        </div>
-                        <div className="lg:col-span-2 bg-card p-4 sm:p-6 rounded-lg shadow-lg">
-                           <h2 className="text-xl font-bold text-text-primary mb-4">Tendencia de Peso</h2>
-                           <WeightChart data={sortedEntries} />
-                        </div>
-                        <div className="lg:col-span-3">
-                            <WeightHistory entries={sortedEntries} onDeleteEntry={deleteWeightEntry} />
-                        </div>
+    const unlockedAchievementIds = useMemo(() => {
+        const unlocked = new Set<string>();
+        if (!sortedEntries.length || !profile.height) return unlocked;
+
+        const firstEntry = sortedEntries[0];
+        const latestEntry = sortedEntries[sortedEntries.length - 1];
+
+        // 1. First Step
+        if (sortedEntries.length >= 1) {
+            unlocked.add('FIRST_STEP');
+        }
+
+        // 2. Weight Loss Milestones
+        const weightLost = firstEntry.weight - latestEntry.weight;
+        if (weightLost > 0) {
+            if (weightLost >= firstEntry.weight * 0.05) unlocked.add('FIVE_PERCENT');
+            if (weightLost >= firstEntry.weight * 0.10) unlocked.add('TEN_PERCENT');
+        }
+
+        // 3. BMI Improvement
+        const initialBmi = calculateBMI(firstEntry.weight, profile.height);
+        const latestBmi = calculateBMI(latestEntry.weight, profile.height);
+        if (initialBmi && latestBmi) {
+            if (getBmiCategoryValue(latestBmi) < getBmiCategoryValue(initialBmi)) {
+                unlocked.add('BMI_IMPROVED');
+            }
+        }
+        
+        // 4. Goal Reached
+        if (profile.goal_weight && Math.abs(latestEntry.weight - profile.goal_weight) < 0.1) {
+            unlocked.add('GOAL_REACHED');
+        }
+
+        return unlocked;
+    }, [sortedEntries, profile]);
+
+    const [newlyUnlocked, setNewlyUnlocked] = useState<Achievement | null>(null);
+    const [seenAchievements, setSeenAchievements] = useLocalStorage<string[]>('seenAchievements', []);
+
+    useEffect(() => {
+        const unseenUnlocked = Array.from(unlockedAchievementIds).filter(id => !seenAchievements.includes(id));
+        if (unseenUnlocked.length > 0) {
+            const achievementToCelebrate = ALL_ACHIEVEMENTS.find(ach => ach.id === unseenUnlocked[0]);
+            if(achievementToCelebrate) {
+                setNewlyUnlocked({ ...achievementToCelebrate, Icon: ICONS_MAP[achievementToCelebrate.id] });
+                setSeenAchievements(prev => [...prev, ...unseenUnlocked]);
+            }
+        }
+    }, [unlockedAchievementIds, seenAchievements, setSeenAchievements, ALL_ACHIEVEMENTS]);
+    // --- End Achievements ---
+
+    const bmiData = useMemo(() => {
+        if (!profile.height || profile.height <= 0) return [];
+        const heightInMeters = profile.height / 100;
+        return sortedEntries.map(entry => ({
+            date: entry.date,
+            bmi: parseFloat((entry.weight / (heightInMeters * heightInMeters)).toFixed(1))
+        }));
+    }, [sortedEntries, profile.height]);
+
+    const updateProfile = async (updates: Partial<UserProfile>) => {
+        const oldProfile = profile;
+        const newProfile = { ...profile, ...updates };
+        setProfile(newProfile); // Optimistic UI update
+
+        const profileTableUpdates: { [key: string]: any } = {};
+        const userMetadataUpdates: { [key: string]: any } = {};
+        const validProfileKeys: (keyof UserProfile)[] = ['name', 'height', 'dob'];
+
+        // Separate updates for 'profiles' table and 'user_metadata'
+        Object.keys(updates).forEach(key => {
+            const typedKey = key as keyof UserProfile;
+            if (typedKey === 'weight_unit' || typedKey === 'height_unit' || typedKey === 'goal_weight') {
+                userMetadataUpdates[typedKey] = updates[typedKey];
+            } else if (validProfileKeys.includes(typedKey)) {
+                profileTableUpdates[typedKey] = updates[typedKey];
+            }
+        });
+
+        let hasError = false;
+
+        // Update the 'profiles' table if there are relevant changes
+        if (Object.keys(profileTableUpdates).length > 0) {
+            const { error } = await supabase.from('profiles').update(profileTableUpdates).eq('id', userProfile.id);
+            if (error) {
+                console.error("Error updating profile:", error.message);
+                hasError = true;
+            }
+        }
+
+        // Update user_metadata in auth.users
+        if (Object.keys(userMetadataUpdates).length > 0) {
+            const { error } = await supabase.auth.updateUser({ data: userMetadataUpdates });
+            if (error) {
+                console.error("Error updating user metadata:", error.message);
+                hasError = true;
+            }
+        }
+
+        if (hasError) {
+            setProfile(oldProfile); // Revert on any error
+        }
+    }
+    
+    const addWeightEntry = useCallback(async (weight: number, date: string) => {
+        const existingEntry = weightEntries.find(entry => entry.date === date);
+
+        if (existingEntry) {
+            // Update existing entry for the selected date
+            const { data, error } = await supabase.from('weights').update({ weight }).eq('id', existingEntry.id).select();
+            if (error) return console.error(error.message);
+            if (data) {
+                setWeightEntries(entries => entries.map(e => e.id === existingEntry.id ? data[0] : e));
+            }
+        } else {
+            // Insert new entry for the selected date
+            const { data, error } = await supabase.from('weights').insert({ date: date, weight: weight, user_id: userProfile.id }).select();
+            if (error) return console.error(error.message);
+            if(data) {
+                setWeightEntries(prevEntries => [...prevEntries, data[0]]);
+            }
+        }
+    }, [weightEntries, userProfile.id]);
+
+    const deleteWeightEntry = useCallback(async (id: number) => {
+        setWeightEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
+        const { error } = await supabase.from('weights').delete().eq('id', id);
+        if (error) console.error("Error deleting weight:", error.message);
+    }, []);
+
+    const weightUnit = profile.weight_unit || 'kg';
+
+    return (
+         <>
+            <Header 
+                name={profile.name} 
+                onNameChange={(name) => updateProfile({ name })} 
+                onSignOut={() => supabase.auth.signOut()}
+                theme={theme}
+                onThemeToggle={onThemeToggle}
+            />
+            <AchievementModal achievement={newlyUnlocked} onClose={() => setNewlyUnlocked(null)} />
+            <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                    <div className="lg:col-span-1 flex flex-col gap-6 lg:gap-8">
+                        <BMICard profile={profile} entries={sortedEntries} onProfileUpdate={updateProfile} />
+                        <WeightForm onAddEntry={addWeightEntry} weightUnit={weightUnit}/>
+                         <Achievements 
+                            allAchievements={ALL_ACHIEVEMENTS.map(a => ({...a, Icon: ICONS_MAP[a.id]}))}
+                            unlockedIds={unlockedAchievementIds} 
+                        />
                     </div>
-                </main>
-            </>
+                    <div className="lg:col-span-2 bg-card dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+                        <div className="flex border-b border-gray-200 dark:border-gray-700">
+                           <button
+                               onClick={() => setActiveChart('weight')}
+                               className={`py-2 px-4 font-semibold transition-colors duration-200 ${activeChart === 'weight' ? 'border-b-2 border-primary text-primary' : 'text-text-secondary dark:text-gray-400 hover:text-text-primary dark:hover:text-gray-200'}`}
+                           >
+                               {t('dashboard.weightTrend')}
+                           </button>
+                           <button
+                               onClick={() => setActiveChart('bmi')}
+                               className={`py-2 px-4 font-semibold transition-colors duration-200 ${activeChart === 'bmi' ? 'border-b-2 border-primary text-primary' : 'text-text-secondary dark:text-gray-400 hover:text-text-primary dark:hover:text-gray-200'}`}
+                           >
+                               {t('dashboard.bmiTrend')}
+                           </button>
+                       </div>
+                       <div className="mt-4">
+                           {activeChart === 'weight' ? (
+                               <WeightChart data={sortedEntries} weightUnit={weightUnit} theme={theme} />
+                           ) : (
+                               <BMIChart data={bmiData} theme={theme} />
+                           )}
+                       </div>
+                    </div>
+                    <div className="lg:col-span-3">
+                        <WeightHistory entries={sortedEntries} onDeleteEntry={deleteWeightEntry} weightUnit={weightUnit} />
+                    </div>
+                </div>
+            </main>
+        </>
+    )
+}
+
+
+const App: React.FC = () => {
+    const { t, i18n } = useTranslation();
+    const [session, setSession] = useState<Session | null>(null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [weights, setWeights] = useState<WeightEntry[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+    const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
+
+    useEffect(() => {
+        const root = window.document.documentElement;
+        root.classList.remove(theme === 'light' ? 'dark' : 'light');
+        root.classList.add(theme);
+    }, [theme]);
+
+    const handleThemeToggle = () => {
+        setTheme(theme === 'light' ? 'dark' : 'light');
+    };
+
+     useEffect(() => {
+        document.documentElement.lang = i18n.language;
+        document.documentElement.dir = i18n.dir(i18n.language);
+    }, [i18n, i18n.language]);
+
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session);
+        });
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setSession(session);
+        });
+
+        return () => {
+            subscription?.unsubscribe();
+        };
+    }, []);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!session) {
+                setUserProfile(null);
+                setWeights([]);
+                setFetchError(null);
+                setLoading(false); 
+                return;
+            }
+
+            setLoading(true);
+            setFetchError(null);
+            
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+            
+            if (error) {
+                console.error(`Error fetching profile:`, error.message);
+                setFetchError(t('dashboard.profileFetchError'));
+                setLoading(false);
+                return;
+            }
+
+            setUserProfile(data);
+
+            const { data: weightsData, error: weightsError } = await supabase
+                .from('weights')
+                .select('*')
+                .eq('user_id', session.user.id);
+            
+            if (weightsError) {
+                console.error('Error fetching weights:', weightsError.message);
+                setFetchError(t('dashboard.weightsFetchError'));
+            } else {
+                setWeights(weightsData || []);
+            }
+            
+            setLoading(false);
+        };
+
+        fetchData();
+    }, [session, t]);
+    
+    if (loading) {
+        return <div className="min-h-screen flex items-center justify-center bg-background dark:bg-gray-900 text-text-secondary dark:text-gray-400">{t('auth.loading')}</div>;
+    }
+
+    if (!session) {
+        return <Auth />;
+    }
+    
+    if (fetchError) {
+        return (
+            <div className="min-h-screen flex items-center justify-center text-center p-4 bg-background dark:bg-gray-900">
+                <div className="bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-lg">
+                    <h2 className="text-2xl font-bold text-red-600 mb-4">{t('dashboard.dataErrorTitle')}</h2>
+                    <p className="text-text-secondary dark:text-gray-400 mb-4">{fetchError}</p>
+                    <div className="bg-slate-50 dark:bg-gray-700/50 p-4 rounded-lg text-left rtl:text-right">
+                        <h3 className="font-bold text-text-primary dark:text-gray-200 mb-2">{t('dashboard.rlsErrorTitle')}</h3>
+                        <p className="text-sm text-text-secondary dark:text-gray-400">
+                            <Trans i18nKey="dashboard.rlsErrorBody">
+                                This error almost always occurs because the <strong>profiles</strong> and <strong>weights</strong> tables do not have the correct Row Level Security (RLS) policies. Without them, your application does not have permission to read the data.
+                            </Trans>
+                        </p>
+                        <p className="text-sm text-text-secondary dark:text-gray-400 mt-2">
+                             <Trans i18nKey="dashboard.rlsErrorSolution">
+                                <strong>Solution:</strong> Go to the <strong>SQL Editor</strong> in your Supabase dashboard and run the RLS setup script to create the necessary policies.
+                            </Trans>
+                        </p>
+                    </div>
+                    <button onClick={() => supabase.auth.signOut()} className="mt-6 bg-secondary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-80 transition-colors">
+                        {t('dashboard.tryAgainButton')}
+                    </button>
+                </div>
+            </div>
         );
     }
-
-    if (pendingUser) {
-        // VERIFICATION VIEW
-        return <VerificationScreen 
-                    pendingUser={pendingUser} 
-                    onVerify={(userToVerify) => {
-                        setUser(userToVerify);
-                        setPendingUser(null);
-                    }}
-                    onBack={() => setPendingUser(null)}
-                />;
+    
+    if (!userProfile) {
+        return (
+             <div className="min-h-screen flex items-center justify-center text-center p-4 bg-background dark:bg-gray-900">
+                <div className="bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-lg">
+                    <h2 className="text-2xl font-bold text-red-600 mb-4">{t('dashboard.syncErrorTitle')}</h2>
+                    <p className="text-text-secondary dark:text-gray-400 mb-4">{t('dashboard.syncErrorBody')}</p>
+                     <button onClick={() => supabase.auth.signOut()} className="mt-6 bg-secondary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-80 transition-colors">
+                        {t('dashboard.tryAgainButton')}
+                    </button>
+                </div>
+            </div>
+        )
     }
 
-    // WELCOME VIEW
-    return (
-        <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-screen">
-            <div className="bg-card p-8 rounded-lg shadow-lg text-center max-w-lg mx-auto w-full">
-                <h2 className="text-2xl font-bold text-text-primary mb-4">¡Bienvenido! Empecemos.</h2>
-                <p className="text-text-secondary mb-6">Por favor, completa tu perfil para personalizar tu experiencia y calcular tu IMC.</p>
-                <form noValidate onSubmit={(e) => {
-                    e.preventDefault();
-                    const form = e.target as HTMLFormElement;
-                    const nameInput = form.elements.namedItem('name') as HTMLInputElement;
-                    const emailInput = form.elements.namedItem('email') as HTMLInputElement;
-                    const phoneInput = form.elements.namedItem('phone') as HTMLInputElement;
-                    const dobInput = form.elements.namedItem('dob') as HTMLInputElement;
-                    const heightInput = form.elements.namedItem('height') as HTMLInputElement;
-                    
-                    const formData = {
-                        name: nameInput.value.trim(),
-                        email: emailInput.value.trim(),
-                        phone: phoneInput.value.trim(),
-                        dob: dobInput.value,
-                        height: parseFloat(heightInput.value),
-                    };
-
-                    if (validateRegistrationForm(formData)) {
-                        const newUser: User = {
-                           ...formData,
-                           phone: `${countryCode}${formData.phone}`,
-                        };
-                        setPendingUser(newUser);
-                    }
-                }} className="flex flex-col items-center justify-center gap-4">
-                    <div className="w-full">
-                        <input
-                            type="text" name="name" placeholder="Tu nombre" required
-                            className={`w-full px-4 py-2 border ${formErrors.name ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition`} />
-                        {formErrors.name && <p className="text-red-500 text-sm mt-1 text-left">{formErrors.name}</p>}
-                    </div>
-                     <div className="w-full">
-                        <input
-                            type="email" name="email" placeholder="Tu correo electrónico" required
-                            className={`w-full px-4 py-2 border ${formErrors.email ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition`} />
-                        {formErrors.email && <p className="text-red-500 text-sm mt-1 text-left">{formErrors.email}</p>}
-                    </div>
-                    <div className="w-full">
-                        <label htmlFor="phone" className="sr-only">Número de teléfono</label>
-                        <div className="flex">
-                            <select
-                                name="countryCode"
-                                value={countryCode}
-                                onChange={(e) => setCountryCode(e.target.value)}
-                                className={`bg-gray-50 border border-r-0 ${formErrors.phone ? 'border-red-500' : 'border-gray-300'} rounded-l-lg px-3 py-2 text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent`}
-                                aria-label="Country code"
-                            >
-                                {countries.map((country) => (
-                                    <option key={country.code} value={country.dial_code}>
-                                        {country.flag} {country.dial_code}
-                                    </option>
-                                ))}
-                            </select>
-                            <input
-                                id="phone"
-                                type="tel" name="phone" placeholder="Número de teléfono" required
-                                className={`w-full px-4 py-2 border ${formErrors.phone ? 'border-red-500' : 'border-gray-300'} rounded-r-lg focus:ring-2 focus:ring-primary focus:border-transparent transition`} />
-                        </div>
-                        {formErrors.phone && <p className="text-red-500 text-sm mt-1 text-left">{formErrors.phone}</p>}
-                    </div>
-                     <div className="w-full">
-                         <input
-                            type="date" name="dob" placeholder="Fecha de nacimiento" required
-                            className={`w-full px-4 py-2 border ${formErrors.dob ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition`} />
-                        {formErrors.dob && <p className="text-red-500 text-sm mt-1 text-left">{formErrors.dob}</p>}
-                    </div>
-                    <div className="w-full">
-                        <input
-                            type="number" name="height" placeholder="Tu altura en cm (ej: 175)" required
-                            className={`w-full px-4 py-2 border ${formErrors.height ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition`} />
-                        {formErrors.height && <p className="text-red-500 text-sm mt-1 text-left">{formErrors.height}</p>}
-                    </div>
-                    <button type="submit" className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2">
-                        Guardar y Continuar
-                    </button>
-                </form>
-            </div>
-        </main>
-    );
+    return <Dashboard 
+        userProfile={userProfile} 
+        authUser={session.user} 
+        initialWeights={weights} 
+        theme={theme} 
+        onThemeToggle={handleThemeToggle} 
+    />;
 };
 
 export default App;

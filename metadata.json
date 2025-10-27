@@ -1,5 +1,5 @@
 {
-  "name": "Daily Weight Tracker with BMI",
-  "description": "A modern web application to track your daily weight, calculate your Body Mass Index (BMI), and visualize your progress over time with a beautiful chart.",
+  "name": "PesoZen.com",
+  "description": "Tu compañero ideal para el control de peso diario y cálculo de IMC. Registra tu progreso, visualiza tus avances y alcanza tus metas de bienestar con PesoZen.com.",
   "requestFramePermissions": []
 }

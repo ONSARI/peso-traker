@@ -1,0 +1,144 @@
+
+{
+  "auth": {
+    "loading": "טוען...",
+    "verifyTitle": "אמת את הטלפון שלך",
+    "verifyInstruction": "הזן את הקוד בן 6 הספרות ששלחנו ל-{{phone}}.",
+    "verifyButton": "אמת והמשך",
+    "verifyingButton": "מאמת...",
+    "backToSignup": "חזרה להרשמה",
+    "signupTitle": "צור את החשבון שלך",
+    "signupInstruction": "השלם את פרטיך כדי להתחיל.",
+    "namePlaceholder": "השם שלך",
+    "dobLabel": "תאריך לידה",
+    "heightUnitLabel": "יחידת גובה",
+    "cm": "ס\"מ",
+    "ft": "רגל",
+    "heightPlaceholderCm": "הגובה שלך בס\"מ (למשל, 175)",
+    "ftPlaceholder": "רגל",
+    "inPlaceholder": "אינץ'",
+    "invalidHeightError": "אנא הזן גובה תקין.",
+    "passwordPlaceholder": "הסיסמה שלך",
+    "phonePlaceholder": "מספר טלפון",
+    "phoneVerificationNotice": "תקבל SMS לאימות.",
+    "signupButton": "הירשם",
+    "signingUpButton": "נרשם...",
+    "switchToLogin": "יש לך כבר חשבון? התחבר",
+    "loginTitle": "ברוך שובך!",
+    "loginInstruction": "התחבר לחשבונך כדי להמשיך.",
+    "loginPhonePlaceholder": "מספר הטלפון שלך",
+    "loginButton": "התחבר",
+    "loggingInButton": "טוען...",
+    "switchToSignup": "אין לך חשבון? הירשם",
+    "otpSuccessMessage": "ההרשמה כמעט הושלמה! בדוק את הטלפון שלך לקבלת קוד האימות.",
+    "profileCreationError": "האימות הצליח! אך לא הצלחנו לשמור את הפרופיל שלך: {{message}}. נסה להירשם שוב."
+  },
+  "header": {
+    "greeting": "היי, {{name}}",
+    "editName": "ערוך שם",
+    "logout": "התנתק"
+  },
+  "dashboard": {
+    "weightTrend": "מגמת משקל",
+    "bmiTrend": "מגמת BMI",
+    "profileFetchError": "לא ניתן לטעון את הפרופיל שלך. בדוק את המידע למטה כדי לפתור את הבעיה.",
+    "weightsFetchError": "לא ניתן לטעון את רשומות המשקל שלך. בדוק את המידע למטה כדי לפתור את הבעיה.",
+    "syncErrorTitle": "שגיאת סנכרון",
+    "syncErrorBody": "זיהינו הפעלה פעילה אך לא מצאנו את הפרופיל שלך. ייתכן שזו שגיאה זמנית.",
+    "dataErrorTitle": "שגיאה בטעינת נתונים",
+    "rlsErrorTitle": "סיבה ופתרון אפשריים",
+    "rlsErrorBody": "שגיאה זו מתרחשת כמעט תמיד מכיוון שלטבלאות <1>profiles</1> ו-<1>weights</1> אין את מדיניות האבטחה הנכונה ברמת השורה (RLS). בלעדיהן, לאפליקציה שלך אין הרשאה לקרוא את הנתונים.",
+    "rlsErrorSolution": "<1>פתרון:</1> עבור אל <3>עורך ה-SQL</3> בלוח המחוונים של Supabase והפעל את סקריפט ההתקנה של RLS כדי ליצור את המדיניות הדרושה.",
+    "tryAgainButton": "התנתק ונסה שוב"
+  },
+  "bmiCard": {
+    "title": "הסטטוס שלך",
+    "lastWeight": "משקל אחרון",
+    "height": "גובה",
+    "bmiLabel": "ה-BMI שלך",
+    "notAvailable": "N/A",
+    "goalWeight": "משקל יעד",
+    "setGoal": "הגדר יעד",
+    "goalReached": "היעד הושג! 🎉",
+    "toLose": "להפחית",
+    "toGain": "להעלות",
+    "underweight": "תת-משקל",
+    "normal": "משקל תקין",
+    "overweight": "עודף משקל",
+    "obesity": "השמנת יתר",
+    "goalProgress": {
+      "title": "התקדמות היעד",
+      "progressComplete": "{{percentage}}% הושלם",
+      "startLabel": "התחלה",
+      "goalLabel": "יעד"
+    },
+    "progress": {
+      "title": "התקדמות",
+      "allTime": "מההתחלה",
+      "sevenDays": "7 ימים אחרונים",
+      "thirtyDays": "30 ימים אחרונים",
+      "oneYear": "שנה אחרונה",
+      "weightChange": "שינוי במשקל",
+      "bmiChange": "שינוי ב-BMI (%)"
+    },
+    "units": {
+      "title": "העדפות יחידה",
+      "weight": "משקל",
+      "height": "גובה",
+      "kg": "ק\"ג",
+      "lbs": "פאונד",
+      "cm": "ס\"מ",
+      "ft": "רגל",
+      "in": "אינץ'"
+    }
+  },
+  "weightForm": {
+    "title": "הוסף רשומת משקל",
+    "dateLabel": "תאריך",
+    "weightLabel": "משקל ({{unit}})",
+    "weightPlaceholder": "למשל, 75.5",
+    "saveButton": "שמור משקל",
+    "validationError": "אנא הזן משקל תקין ובחר תאריך."
+  },
+  "history": {
+    "title": "היסטוריית משקל",
+    "noEntries": "אין עדיין רשומות משקל. הוסף אחת כדי להתחיל!",
+    "dateHeader": "תאריך",
+    "weightHeader": "משקל ({{unit}})",
+    "actionsHeader": "פעולות",
+    "deleteLabel": "מחק רשומה"
+  },
+  "charts": {
+    "noDataWeight": "הזן לפחות שתי רשומות משקל כדי לראות את תרשים ההתקדמות שלך.",
+    "noDataBmi": "הזן לפחות שתי רשומות משקל כדי לראות את תרשים מגמת ה-BMI שלך.",
+    "weightLabel": "משקל",
+    "bmiLabel": "BMI",
+    "yAxisLabelWeight": "משקל ({{unit}})",
+    "yAxisLabelBmi": "BMI"
+  },
+  "achievements": {
+    "title": "הישגים",
+    "modalTitle": "הישג חדש נפתח!",
+    "modalClose": "מעולה!",
+    "firstStep": {
+      "title": "צעד ראשון",
+      "description": "רשמת את המשקל הראשון שלך. המסע מתחיל!"
+    },
+    "fivePercent": {
+      "title": "מתקדם יפה",
+      "description": "ירדת 5% ממשקל גופך ההתחלתי. המשך כך!"
+    },
+    "tenPercent": {
+      "title": "בדרך הנכונה!",
+      "description": "ירדת 10% ממשקל גופך ההתחלתי. מדהים!"
+    },
+    "bmiImproved": {
+      "title": "בריא יותר",
+      "description": "שיפרת את קטגוריית ה-BMI שלך. אבן דרך חשובה!"
+    },
+    "goalReached": {
+      "title": "כובש היעדים!",
+      "description": "הגעת למשקל היעד שלך. כל הכבוד!"
+    }
+  }
+}

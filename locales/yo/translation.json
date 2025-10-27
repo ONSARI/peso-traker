@@ -1,0 +1,144 @@
+
+{
+  "auth": {
+    "loading": "O n gberu...",
+    "verifyTitle": "Daju Foonu Rẹ",
+    "verifyInstruction": "Tẹ koodu oni-nọmba 6 ti a fi ranṣẹ si {{phone}}.",
+    "verifyButton": "Daju ati Tẹsiwaju",
+    "verifyingButton": "O n ṣayẹwo...",
+    "backToSignup": "Pada si iforukọsilẹ",
+    "signupTitle": "Ṣẹda Akọọlẹ Rẹ",
+    "signupInstruction": "Pari awọn alaye rẹ lati bẹrẹ.",
+    "namePlaceholder": "Orukọ rẹ",
+    "dobLabel": "Ọjọ ibi",
+    "heightUnitLabel": "Ẹyọ Giga",
+    "cm": "cm",
+    "ft": "ẹsẹ",
+    "heightPlaceholderCm": "Giga rẹ ni cm (fun apẹẹrẹ, 175)",
+    "ftPlaceholder": "ẹsẹ",
+    "inPlaceholder": "inṣi",
+    "invalidHeightError": "Jọwọ tẹ giga to wulo.",
+    "passwordPlaceholder": "Ọrọ aṣina rẹ",
+    "phonePlaceholder": "Nọmba foonu",
+    "phoneVerificationNotice": "Iwọ yoo gba SMS fun ijẹrisi.",
+    "signupButton": "Forukọsilẹ",
+    "signingUpButton": "O n forukọsilẹ...",
+    "switchToLogin": "O ti ni akọọlẹ tẹlẹ? Wọle",
+    "loginTitle": "Kaabọ Pada!",
+    "loginInstruction": "Wọle si akọọlẹ rẹ lati tẹsiwaju.",
+    "loginPhonePlaceholder": "Nọmba foonu rẹ",
+    "loginButton": "Wọle",
+    "loggingInButton": "O n gberu...",
+    "switchToSignup": "O ko ni akọọlẹ? Forukọsilẹ",
+    "otpSuccessMessage": "Iforukọsilẹ ti fẹrẹ pari! Ṣayẹwo foonu rẹ fun koodu ijẹrisi.",
+    "profileCreationError": "Ijẹrisi ṣaṣeyọri! Ṣugbọn a ko le fi profaili rẹ pamọ: {{message}}. Jọwọ gbiyanju lati forukọsilẹ lẹẹkansi."
+  },
+  "header": {
+    "greeting": "Pẹlẹ o, {{name}}",
+    "editName": "Ṣatunṣe orukọ",
+    "logout": "Jade"
+  },
+  "dashboard": {
+    "weightTrend": "Aṣa Iwọn",
+    "bmiTrend": "Aṣa BMI",
+    "profileFetchError": "Ko le gbe profaili rẹ. Jọwọ ṣayẹwo alaye ni isalẹ lati yanju ọran naa.",
+    "weightsFetchError": "Ko le gbe awọn igbasilẹ iwuwo rẹ. Jọwọ ṣayẹwo alaye ni isalẹ lati yanju ọran naa.",
+    "syncErrorTitle": "Aṣiṣe Amuṣiṣẹpọ",
+    "syncErrorBody": "A ti rii igba ti n ṣiṣẹ ṣugbọn a ko le ri profaili rẹ. Eyi le jẹ aṣiṣe igba diẹ.",
+    "dataErrorTitle": "Aṣiṣe Gbigbe Data",
+    "rlsErrorTitle": "Idi ti o ṣeeṣe ati Ojutu",
+    "rlsErrorBody": "Aṣiṣe yii fẹrẹẹ jẹ nigbagbogbo nitori awọn tabili <1>profiles</1> ati <1>weights</1> ko ni awọn eto imulo Aabo Ipele Ipele (RLS) to tọ. Laisi wọn, ohun elo rẹ ko ni igbanilaaye lati ka data naa.",
+    "rlsErrorSolution": "<1>Ojutu:</1> Lọ si <3>Olootu SQL</3> ninu dasibodu Supabase rẹ ki o ṣiṣe iwe afọwọkọ iṣeto RLS lati ṣẹda awọn eto imulo to ṣe pataki.",
+    "tryAgainButton": "Jade ki o Tun Gbiyanju"
+  },
+  "bmiCard": {
+    "title": "Ipo Rẹ",
+    "lastWeight": "Iwọn Ikẹhin",
+    "height": "Giga",
+    "bmiLabel": "BMI Rẹ",
+    "notAvailable": "K/S",
+    "goalWeight": "Ìwọn Erongba",
+    "setGoal": "Ṣeto Erongba",
+    "goalReached": "Erongba ti Ṣẹ! 🎉",
+    "toLose": "lati padanu",
+    "toGain": "lati jere",
+    "underweight": "Iwọn-ara-kere",
+    "normal": "Iwọn-ara-deede",
+    "overweight": "Iwọn-ara-ju",
+    "obesity": "Isanraju",
+    "goalProgress": {
+      "title": "Ilọsiwaju Erongba",
+      "progressComplete": "{{percentage}}% Ti Pari",
+      "startLabel": "Ibẹrẹ",
+      "goalLabel": "Erongba"
+    },
+    "progress": {
+      "title": "Ilọsiwaju",
+      "allTime": "Lati Ibẹrẹ",
+      "sevenDays": "Ọjọ 7 Kẹhin",
+      "thirtyDays": "Ọjọ 30 Kẹhin",
+      "oneYear": "Ọdun Kẹhin",
+      "weightChange": "Iyipada Iwọn",
+      "bmiChange": "Iyipada BMI (%)"
+    },
+    "units": {
+      "title": "Awọn ayanfẹ Ẹyọ",
+      "weight": "Iwọn",
+      "height": "Giga",
+      "kg": "kg",
+      "lbs": "lbs",
+      "cm": "cm",
+      "ft": "ẹsẹ",
+      "in": "inṣi"
+    }
+  },
+  "weightForm": {
+    "title": "Fi Igbasilẹ Iwọn kun",
+    "dateLabel": "Ọjọ",
+    "weightLabel": "Iwọn ({{unit}})",
+    "weightPlaceholder": "fun apẹẹrẹ, 75.5",
+    "saveButton": "Fipamọ Iwọn",
+    "validationError": "Jọwọ tẹ iwuwo to wulo ki o yan ọjọ kan."
+  },
+  "history": {
+    "title": "Itan Iwọn",
+    "noEntries": "Ko si awọn igbasilẹ iwuwo sibẹsibẹ. Fi ọkan kun lati bẹrẹ!",
+    "dateHeader": "Ọjọ",
+    "weightHeader": "Iwọn ({{unit}})",
+    "actionsHeader": "Awọn iṣe",
+    "deleteLabel": "Pa igbasilẹ rẹ"
+  },
+  "charts": {
+    "noDataWeight": "Tẹ o kere ju awọn igbasilẹ iwuwo meji lati wo aworan ilọsiwaju rẹ.",
+    "noDataBmi": "Tẹ o kere ju awọn igbasilẹ iwuwo meji lati wo aworan aṣa BMI rẹ.",
+    "weightLabel": "Iwọn",
+    "bmiLabel": "BMI",
+    "yAxisLabelWeight": "Iwọn ({{unit}})",
+    "yAxisLabelBmi": "BMI"
+  },
+  "achievements": {
+    "title": "Àṣeyọrí",
+    "modalTitle": "Àṣeyọrí Tuntun ṣí!",
+    "modalClose": "Ó dára!",
+    "firstStep": {
+      "title": "Ìgbésẹ̀ Kìíní",
+      "description": "O ti ṣe àkọsílẹ̀ ìwọ̀n rẹ àkọ́kọ́. Ìrìn àjò bẹ̀rẹ̀!"
+    },
+    "fivePercent": {
+      "title": "Nlọsiwaju",
+      "description": "O ti padanu 5% ti ìwọ̀n ara rẹ ìbẹ̀rẹ̀. Máa bá a lọ!"
+    },
+    "tenPercent": {
+      "title": "Lórí Ròrò!",
+      "description": "O ti padanu 10% ti ìwọ̀n ara rẹ ìbẹ̀rẹ̀. Ó yani lẹ́nu!"
+    },
+    "bmiImproved": {
+      "title": "Ìlera Rẹ Dara si",
+      "description": "O ti mú ìpele BMI rẹ sunwọ̀n si. Ipele pàtàkì!"
+    },
+    "goalReached": {
+      "title": "Aṣẹ́gun Erongba!",
+      "description": "O ti dé ìwọ̀n erongba rẹ. Mo kí ọ ku oriire!"
+    }
+  }
+}

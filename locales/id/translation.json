@@ -1,0 +1,144 @@
+
+{
+  "auth": {
+    "loading": "Memuat...",
+    "verifyTitle": "Verifikasi Ponsel Anda",
+    "verifyInstruction": "Masukkan kode 6 digit yang kami kirimkan ke {{phone}}.",
+    "verifyButton": "Verifikasi dan Lanjutkan",
+    "verifyingButton": "Memverifikasi...",
+    "backToSignup": "Kembali ke pendaftaran",
+    "signupTitle": "Buat Akun Anda",
+    "signupInstruction": "Lengkapi detail Anda untuk memulai.",
+    "namePlaceholder": "Nama Anda",
+    "dobLabel": "Tanggal lahir",
+    "heightUnitLabel": "Satuan Tinggi",
+    "cm": "cm",
+    "ft": "kaki",
+    "heightPlaceholderCm": "Tinggi badan Anda dalam cm (misalnya, 175)",
+    "ftPlaceholder": "kaki",
+    "inPlaceholder": "inci",
+    "invalidHeightError": "Harap masukkan tinggi badan yang valid.",
+    "passwordPlaceholder": "Kata sandi Anda",
+    "phonePlaceholder": "Nomor telepon",
+    "phoneVerificationNotice": "Anda akan menerima SMS untuk verifikasi.",
+    "signupButton": "Daftar",
+    "signingUpButton": "Mendaftar...",
+    "switchToLogin": "Sudah punya akun? Masuk",
+    "loginTitle": "Selamat Datang Kembali!",
+    "loginInstruction": "Masuk ke akun Anda untuk melanjutkan.",
+    "loginPhonePlaceholder": "Nomor telepon Anda",
+    "loginButton": "Masuk",
+    "loggingInButton": "Memuat...",
+    "switchToSignup": "Tidak punya akun? Daftar",
+    "otpSuccessMessage": "Pendaftaran hampir selesai! Periksa ponsel Anda untuk kode verifikasi.",
+    "profileCreationError": "Verifikasi berhasil! Tapi kami tidak dapat menyimpan profil Anda: {{message}}. Silakan coba mendaftar lagi."
+  },
+  "header": {
+    "greeting": "Hai, {{name}}",
+    "editName": "Ubah nama",
+    "logout": "Keluar"
+  },
+  "dashboard": {
+    "weightTrend": "Tren Berat Badan",
+    "bmiTrend": "Tren IMT",
+    "profileFetchError": "Tidak dapat memuat profil Anda. Silakan periksa informasi di bawah ini untuk mengatasi masalah.",
+    "weightsFetchError": "Tidak dapat memuat entri berat badan Anda. Silakan periksa informasi di bawah ini untuk mengatasi masalah.",
+    "syncErrorTitle": "Kesalahan Sinkronisasi",
+    "syncErrorBody": "Kami mendeteksi sesi aktif tetapi tidak dapat menemukan profil Anda. Ini mungkin kesalahan sementara.",
+    "dataErrorTitle": "Kesalahan Memuat Data",
+    "rlsErrorTitle": "Kemungkinan Penyebab dan Solusi",
+    "rlsErrorBody": "Kesalahan ini hampir selalu terjadi karena tabel <1>profiles</1> dan <1>weights</1> tidak memiliki kebijakan Keamanan Tingkat Baris (RLS) yang benar. Tanpa itu, aplikasi Anda tidak memiliki izin untuk membaca data.",
+    "rlsErrorSolution": "<1>Solusi:</1> Buka <3>Editor SQL</3> di dasbor Supabase Anda dan jalankan skrip pengaturan RLS untuk membuat kebijakan yang diperlukan.",
+    "tryAgainButton": "Keluar dan Coba Lagi"
+  },
+  "bmiCard": {
+    "title": "Status Anda",
+    "lastWeight": "Berat Terakhir",
+    "height": "Tinggi Badan",
+    "bmiLabel": "IMT Anda",
+    "notAvailable": "T/A",
+    "goalWeight": "Berat Target",
+    "setGoal": "Atur Target",
+    "goalReached": "Target Tercapai! 🎉",
+    "toLose": "untuk turun",
+    "toGain": "untuk naik",
+    "underweight": "Berat badan kurang",
+    "normal": "Berat badan normal",
+    "overweight": "Berat badan berlebih",
+    "obesity": "Obesitas",
+    "goalProgress": {
+      "title": "Kemajuan Target",
+      "progressComplete": "{{percentage}}% Selesai",
+      "startLabel": "Mulai",
+      "goalLabel": "Target"
+    },
+    "progress": {
+      "title": "Kemajuan",
+      "allTime": "Sejak Awal",
+      "sevenDays": "7 Hari Terakhir",
+      "thirtyDays": "30 Hari Terakhir",
+      "oneYear": "1 Tahun Terakhir",
+      "weightChange": "Perubahan Berat",
+      "bmiChange": "Perubahan IMT (%)"
+    },
+    "units": {
+      "title": "Preferensi Satuan",
+      "weight": "Berat",
+      "height": "Tinggi",
+      "kg": "kg",
+      "lbs": "lbs",
+      "cm": "cm",
+      "ft": "kaki",
+      "in": "inci"
+    }
+  },
+  "weightForm": {
+    "title": "Tambah Entri Berat Badan",
+    "dateLabel": "Tanggal",
+    "weightLabel": "Berat ({{unit}})",
+    "weightPlaceholder": "misalnya, 75.5",
+    "saveButton": "Simpan Berat",
+    "validationError": "Harap masukkan berat yang valid dan pilih tanggal."
+  },
+  "history": {
+    "title": "Riwayat Berat Badan",
+    "noEntries": "Belum ada entri berat badan. Tambahkan satu untuk memulai!",
+    "dateHeader": "Tanggal",
+    "weightHeader": "Berat ({{unit}})",
+    "actionsHeader": "Tindakan",
+    "deleteLabel": "Hapus entri"
+  },
+  "charts": {
+    "noDataWeight": "Masukkan setidaknya dua entri berat badan untuk melihat grafik kemajuan Anda.",
+    "noDataBmi": "Masukkan setidaknya dua entri berat badan untuk melihat grafik tren IMT Anda.",
+    "weightLabel": "Berat",
+    "bmiLabel": "IMT",
+    "yAxisLabelWeight": "Berat ({{unit}})",
+    "yAxisLabelBmi": "IMT"
+  },
+  "achievements": {
+    "title": "Pencapaian",
+    "modalTitle": "Pencapaian Baru Terbuka!",
+    "modalClose": "Luar Biasa!",
+    "firstStep": {
+      "title": "Langkah Pertama",
+      "description": "Anda telah mencatat berat badan pertama Anda. Perjalanan dimulai!"
+    },
+    "fivePercent": {
+      "title": "Membuat Kemajuan",
+      "description": "Anda telah kehilangan 5% dari berat badan awal Anda. Terus semangat!"
+    },
+    "tenPercent": {
+      "title": "Sedang dalam Tren Positif!",
+      "description": "Anda telah kehilangan 10% dari berat badan awal Anda. Luar biasa!"
+    },
+    "bmiImproved": {
+      "title": "Anda yang Lebih Sehat",
+      "description": "Anda telah meningkatkan kategori IMT Anda. Sebuah tonggak sejarah besar!"
+    },
+    "goalReached": {
+      "title": "Penghancur Target!",
+      "description": "Anda telah mencapai berat target Anda. Selamat!"
+    }
+  }
+}

@@ -1,0 +1,144 @@
+
+{
+  "auth": {
+    "loading": "Loading...",
+    "verifyTitle": "Verify Your Phone",
+    "verifyInstruction": "Enter the 6-digit code we sent to {{phone}}.",
+    "verifyButton": "Verify and Continue",
+    "verifyingButton": "Verifying...",
+    "backToSignup": "Back to registration",
+    "signupTitle": "Create Your Account",
+    "signupInstruction": "Complete your details to get started.",
+    "namePlaceholder": "Your name",
+    "dobLabel": "Date of birth",
+    "heightUnitLabel": "Height Unit",
+    "cm": "cm",
+    "ft": "ft",
+    "heightPlaceholderCm": "Your height in cm (e.g., 175)",
+    "ftPlaceholder": "ft",
+    "inPlaceholder": "in",
+    "invalidHeightError": "Please enter a valid height.",
+    "passwordPlaceholder": "Your password",
+    "phonePlaceholder": "Phone number",
+    "phoneVerificationNotice": "You will receive an SMS for verification.",
+    "signupButton": "Sign Up",
+    "signingUpButton": "Signing up...",
+    "switchToLogin": "Already have an account? Log in",
+    "loginTitle": "Welcome Back!",
+    "loginInstruction": "Log in to your account to continue.",
+    "loginPhonePlaceholder": "Your phone number",
+    "loginButton": "Log In",
+    "loggingInButton": "Loading...",
+    "switchToSignup": "Don't have an account? Sign up",
+    "otpSuccessMessage": "Registration almost complete! Check your phone for the verification code.",
+    "profileCreationError": "Verification successful! But we couldn't save your profile: {{message}}. Please try to register again."
+  },
+  "header": {
+    "greeting": "Hi, {{name}}",
+    "editName": "Edit name",
+    "logout": "Log Out"
+  },
+  "dashboard": {
+    "weightTrend": "Weight Trend",
+    "bmiTrend": "BMI Trend",
+    "profileFetchError": "Could not load your profile. Please check the information below to resolve the issue.",
+    "weightsFetchError": "Could not load your weight entries. Please check the information below to resolve the issue.",
+    "syncErrorTitle": "Synchronization Error",
+    "syncErrorBody": "We've detected an active session but could not find your profile. This might be a temporary error.",
+    "dataErrorTitle": "Error Loading Data",
+    "rlsErrorTitle": "Possible Cause and Solution",
+    "rlsErrorBody": "This error almost always occurs because the <1>profiles</1> and <1>weights</1> tables do not have the correct Row Level Security (RLS) policies. Without them, your application does not have permission to read the data.",
+    "rlsErrorSolution": "<1>Solution:</1> Go to the <3>SQL Editor</3> in your Supabase dashboard and run the RLS setup script to create the necessary policies.",
+    "tryAgainButton": "Log Out and Try Again"
+  },
+  "bmiCard": {
+    "title": "Your Status",
+    "lastWeight": "Last Weight",
+    "height": "Height",
+    "bmiLabel": "Your BMI",
+    "notAvailable": "N/A",
+    "goalWeight": "Goal Weight",
+    "setGoal": "Set Goal",
+    "goalReached": "Goal Reached! 🎉",
+    "toLose": "to lose",
+    "toGain": "to gain",
+    "underweight": "Underweight",
+    "normal": "Normal weight",
+    "overweight": "Overweight",
+    "obesity": "Obesity",
+    "goalProgress": {
+      "title": "Goal Progress",
+      "progressComplete": "{{percentage}}% Complete",
+      "startLabel": "Start",
+      "goalLabel": "Goal"
+    },
+    "progress": {
+      "title": "Progress",
+      "allTime": "Since Beginning",
+      "sevenDays": "Last 7 Days",
+      "thirtyDays": "Last 30 Days",
+      "oneYear": "Last Year",
+      "weightChange": "Weight Change",
+      "bmiChange": "BMI Change (%)"
+    },
+    "units": {
+      "title": "Unit Preferences",
+      "weight": "Weight",
+      "height": "Height",
+      "kg": "kg",
+      "lbs": "lbs",
+      "cm": "cm",
+      "ft": "ft",
+      "in": "in"
+    }
+  },
+  "weightForm": {
+    "title": "Add Weight Entry",
+    "dateLabel": "Date",
+    "weightLabel": "Weight ({{unit}})",
+    "weightPlaceholder": "e.g., 75.5",
+    "saveButton": "Save Weight",
+    "validationError": "Please enter a valid weight and select a date."
+  },
+  "history": {
+    "title": "Weight History",
+    "noEntries": "No weight entries yet. Add one to get started!",
+    "dateHeader": "Date",
+    "weightHeader": "Weight ({{unit}})",
+    "actionsHeader": "Actions",
+    "deleteLabel": "Delete entry"
+  },
+  "charts": {
+    "noDataWeight": "Enter at least two weight entries to see your progress chart.",
+    "noDataBmi": "Enter at least two weight entries to see your BMI trend chart.",
+    "weightLabel": "Weight",
+    "bmiLabel": "BMI",
+    "yAxisLabelWeight": "Weight ({{unit}})",
+    "yAxisLabelBmi": "BMI"
+  },
+  "achievements": {
+    "title": "Achievements",
+    "modalTitle": "New Achievement Unlocked!",
+    "modalClose": "Awesome!",
+    "firstStep": {
+      "title": "First Step",
+      "description": "You've recorded your first weight. The journey begins!"
+    },
+    "fivePercent": {
+      "title": "Making Progress",
+      "description": "You've lost 5% of your starting body weight. Keep it up!"
+    },
+    "tenPercent": {
+      "title": "On a Roll!",
+      "description": "You've lost 10% of your starting body weight. Incredible!"
+    },
+    "bmiImproved": {
+      "title": "Healthier You",
+      "description": "You've improved your BMI category. A major milestone!"
+    },
+    "goalReached": {
+      "title": "Goal Smasher!",
+      "description": "You've reached your target weight. Congratulations!"
+    }
+  }
+}

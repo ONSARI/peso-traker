@@ -1,0 +1,144 @@
+
+{
+  "auth": {
+    "loading": "Yükleniyor...",
+    "verifyTitle": "Telefonunuzu Doğrulayın",
+    "verifyInstruction": "{{phone}} numarasına gönderdiğimiz 6 haneli kodu girin.",
+    "verifyButton": "Doğrula ve Devam Et",
+    "verifyingButton": "Doğrulanıyor...",
+    "backToSignup": "Kayıt ekranına geri dön",
+    "signupTitle": "Hesabınızı Oluşturun",
+    "signupInstruction": "Başlamak için bilgilerinizi tamamlayın.",
+    "namePlaceholder": "Adınız",
+    "dobLabel": "Doğum tarihi",
+    "heightUnitLabel": "Boy Birimi",
+    "cm": "cm",
+    "ft": "ft",
+    "heightPlaceholderCm": "Boyunuz (cm cinsinden, örn: 175)",
+    "ftPlaceholder": "ft",
+    "inPlaceholder": "inç",
+    "invalidHeightError": "Lütfen geçerli bir boy girin.",
+    "passwordPlaceholder": "Şifreniz",
+    "phonePlaceholder": "Telefon numarası",
+    "phoneVerificationNotice": "Doğrulama için bir SMS alacaksınız.",
+    "signupButton": "Kaydol",
+    "signingUpButton": "Kaydolunuyor...",
+    "switchToLogin": "Zaten bir hesabınız var mı? Giriş yapın",
+    "loginTitle": "Tekrar Hoş Geldiniz!",
+    "loginInstruction": "Devam etmek için hesabınıza giriş yapın.",
+    "loginPhonePlaceholder": "Telefon numaranız",
+    "loginButton": "Giriş Yap",
+    "loggingInButton": "Yükleniyor...",
+    "switchToSignup": "Hesabınız yok mu? Kaydolun",
+    "otpSuccessMessage": "Kayıt neredeyse tamamlandı! Doğrulama kodu için telefonunuzu kontrol edin.",
+    "profileCreationError": "Doğrulama başarılı! Ancak profilinizi kaydedemedik: {{message}}. Lütfen tekrar kaydolmayı deneyin."
+  },
+  "header": {
+    "greeting": "Merhaba, {{name}}",
+    "editName": "Adı düzenle",
+    "logout": "Çıkış Yap"
+  },
+  "dashboard": {
+    "weightTrend": "Kilo Trendi",
+    "bmiTrend": "VKI Trendi",
+    "profileFetchError": "Profiliniz yüklenemedi. Sorunu çözmek için lütfen aşağıdaki bilgileri kontrol edin.",
+    "weightsFetchError": "Kilo kayıtlarınız yüklenemedi. Sorunu çözmek için lütfen aşağıdaki bilgileri kontrol edin.",
+    "syncErrorTitle": "Senkronizasyon Hatası",
+    "syncErrorBody": "Aktif bir oturum tespit ettik ancak profilinizi bulamadık. Bu geçici bir hata olabilir.",
+    "dataErrorTitle": "Veri Yüklenirken Hata Oluştu",
+    "rlsErrorTitle": "Olası Neden ve Çözüm",
+    "rlsErrorBody": "Bu hata neredeyse her zaman <1>profiles</1> ve <1>weights</1> tablolarının doğru Satır Seviyesi Güvenlik (RLS) politikalarına sahip olmamasından kaynaklanır. Bunlar olmadan, uygulamanızın verileri okuma izni yoktur.",
+    "rlsErrorSolution": "<1>Çözüm:</1> Supabase kontrol panelinizdeki <3>SQL Düzenleyici</3>'ye gidin ve gerekli politikaları oluşturmak için RLS kurulum betiğini çalıştırın.",
+    "tryAgainButton": "Çıkış Yap ve Tekrar Dene"
+  },
+  "bmiCard": {
+    "title": "Durumunuz",
+    "lastWeight": "Son Kilo",
+    "height": "Boy",
+    "bmiLabel": "VKI'niz",
+    "notAvailable": "N/A",
+    "goalWeight": "Hedef Kilo",
+    "setGoal": "Hedef Belirle",
+    "goalReached": "Hedefe Ulaşıldı! 🎉",
+    "toLose": "verilecek",
+    "toGain": "alınacak",
+    "underweight": "Zayıf",
+    "normal": "Normal kilo",
+    "overweight": "Fazla kilolu",
+    "obesity": "Obezite",
+    "goalProgress": {
+      "title": "Hedef İlerlemesi",
+      "progressComplete": "%{{percentage}} Tamamlandı",
+      "startLabel": "Başlangıç",
+      "goalLabel": "Hedef"
+    },
+    "progress": {
+      "title": "İlerleme",
+      "allTime": "Başlangıçtan beri",
+      "sevenDays": "Son 7 Gün",
+      "thirtyDays": "Son 30 Gün",
+      "oneYear": "Son Yıl",
+      "weightChange": "Kilo Değişimi",
+      "bmiChange": "VKI Değişimi (%)"
+    },
+    "units": {
+      "title": "Birim Tercihleri",
+      "weight": "Kilo",
+      "height": "Boy",
+      "kg": "kg",
+      "lbs": "lbs",
+      "cm": "cm",
+      "ft": "ft",
+      "in": "inç"
+    }
+  },
+  "weightForm": {
+    "title": "Kilo Kaydı Ekle",
+    "dateLabel": "Tarih",
+    "weightLabel": "Kilo ({{unit}})",
+    "weightPlaceholder": "örn: 75.5",
+    "saveButton": "Kiloyu Kaydet",
+    "validationError": "Lütfen geçerli bir kilo girin ve bir tarih seçin."
+  },
+  "history": {
+    "title": "Kilo Geçmişi",
+    "noEntries": "Henüz kilo kaydı yok. Başlamak için bir tane ekleyin!",
+    "dateHeader": "Tarih",
+    "weightHeader": "Kilo ({{unit}})",
+    "actionsHeader": "Eylemler",
+    "deleteLabel": "Kaydı sil"
+  },
+  "charts": {
+    "noDataWeight": "İlerleme grafiğinizi görmek için en az iki kilo kaydı girin.",
+    "noDataBmi": "VKI trend grafiğinizi görmek için en az iki kilo kaydı girin.",
+    "weightLabel": "Kilo",
+    "bmiLabel": "VKI",
+    "yAxisLabelWeight": "Kilo ({{unit}})",
+    "yAxisLabelBmi": "VKI"
+  },
+  "achievements": {
+    "title": "Başarımlar",
+    "modalTitle": "Yeni Başarım Kilidi Açıldı!",
+    "modalClose": "Harika!",
+    "firstStep": {
+      "title": "İlk Adım",
+      "description": "İlk kilonuzu kaydettiniz. Yolculuk başlıyor!"
+    },
+    "fivePercent": {
+      "title": "İlerleme Kaydediliyor",
+      "description": "Başlangıç kilonuzun %5'ini kaybettiniz. Devam edin!"
+    },
+    "tenPercent": {
+      "title": "Hız Kesmeden!",
+      "description": "Başlangıç kilonuzun %10'unu kaybettiniz. İnanılmaz!"
+    },
+    "bmiImproved": {
+      "title": "Daha Sağlıklı Sen",
+      "description": "VKI kategorinizi iyileştirdiniz. Önemli bir kilometre taşı!"
+    },
+    "goalReached": {
+      "title": "Hedef Avcısı!",
+      "description": "Hedef kilonuza ulaştınız. Tebrikler!"
+    }
+  }
+}

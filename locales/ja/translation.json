@@ -1,0 +1,144 @@
+
+{
+  "auth": {
+    "loading": "読み込み中...",
+    "verifyTitle": "電話番号を確認",
+    "verifyInstruction": "{{phone}} に送信された6桁のコードを入力してください。",
+    "verifyButton": "確認して続行",
+    "verifyingButton": "確認中...",
+    "backToSignup": "登録に戻る",
+    "signupTitle": "アカウントを作成",
+    "signupInstruction": "詳細を記入して始めましょう。",
+    "namePlaceholder": "あなたの名前",
+    "dobLabel": "生年月日",
+    "heightUnitLabel": "身長の単位",
+    "cm": "cm",
+    "ft": "ft",
+    "heightPlaceholderCm": "身長（cm単位、例：175）",
+    "ftPlaceholder": "フィート",
+    "inPlaceholder": "インチ",
+    "invalidHeightError": "有効な身長を入力してください。",
+    "passwordPlaceholder": "パスワード",
+    "phonePlaceholder": "電話番号",
+    "phoneVerificationNotice": "確認用のSMSが届きます。",
+    "signupButton": "登録",
+    "signingUpButton": "登録中...",
+    "switchToLogin": "すでにアカウントをお持ちですか？ログイン",
+    "loginTitle": "おかえりなさい！",
+    "loginInstruction": "アカウントにログインして続行してください。",
+    "loginPhonePlaceholder": "あなたの電話番号",
+    "loginButton": "ログイン",
+    "loggingInButton": "読み込み中...",
+    "switchToSignup": "アカウントをお持ちでないですか？登録",
+    "otpSuccessMessage": "登録はほぼ完了です！確認コードについては携帯電話を確認してください。",
+    "profileCreationError": "確認は成功しましたが、プロフィールを保存できませんでした：{{message}}。もう一度登録してみてください。"
+  },
+  "header": {
+    "greeting": "こんにちは、{{name}}さん",
+    "editName": "名前を編集",
+    "logout": "ログアウト"
+  },
+  "dashboard": {
+    "weightTrend": "体重の推移",
+    "bmiTrend": "BMIの推移",
+    "profileFetchError": "プロフィールを読み込めませんでした。問題を解決するには、以下の情報を確認してください。",
+    "weightsFetchError": "体重記録を読み込めませんでした。問題を解決するには、以下の情報を確認してください。",
+    "syncErrorTitle": "同期エラー",
+    "syncErrorBody": "アクティブなセッションを検出しましたが、プロフィールが見つかりませんでした。これは一時的なエラーの可能性があります。",
+    "dataErrorTitle": "データの読み込みエラー",
+    "rlsErrorTitle": "考えられる原因と解決策",
+    "rlsErrorBody": "このエラーは、ほとんどの場合、<1>profiles</1> テーブルと <1>weights</1> テーブルに正しい行レベルセキュリティ (RLS) ポリシーがないために発生します。これらがないと、アプリケーションはデータを読み取る権限がありません。",
+    "rlsErrorSolution": "<1>解決策：</1> Supabaseダッシュボードの <3>SQLエディタ</3> に移動し、RLS設定スクリプトを実行して必要なポリシーを作成します。",
+    "tryAgainButton": "ログアウトして再試行"
+  },
+  "bmiCard": {
+    "title": "あなたのステータス",
+    "lastWeight": "最新の体重",
+    "height": "身長",
+    "bmiLabel": "あなたのBMI",
+    "notAvailable": "N/A",
+    "goalWeight": "目標体重",
+    "setGoal": "目標設定",
+    "goalReached": "目標達成！🎉",
+    "toLose": "減量まで",
+    "toGain": "増量まで",
+    "underweight": "低体重",
+    "normal": "普通体重",
+    "overweight": "過体重",
+    "obesity": "肥満",
+    "goalProgress": {
+      "title": "目標の進捗",
+      "progressComplete": "{{percentage}}% 達成",
+      "startLabel": "開始",
+      "goalLabel": "目標"
+    },
+    "progress": {
+      "title": "進捗",
+      "allTime": "開始以来",
+      "sevenDays": "過去7日間",
+      "thirtyDays": "過去30日間",
+      "oneYear": "過去1年間",
+      "weightChange": "体重の変化",
+      "bmiChange": "BMIの変化 (%)"
+    },
+    "units": {
+      "title": "単位の設定",
+      "weight": "体重",
+      "height": "身長",
+      "kg": "kg",
+      "lbs": "lbs",
+      "cm": "cm",
+      "ft": "ft",
+      "in": "in"
+    }
+  },
+  "weightForm": {
+    "title": "体重記録を追加",
+    "dateLabel": "日付",
+    "weightLabel": "体重 ({{unit}})",
+    "weightPlaceholder": "例：75.5",
+    "saveButton": "体重を保存",
+    "validationError": "有効な体重を入力し、日付を選択してください。"
+  },
+  "history": {
+    "title": "体重履歴",
+    "noEntries": "まだ体重記録がありません。追加して始めましょう！",
+    "dateHeader": "日付",
+    "weightHeader": "体重 ({{unit}})",
+    "actionsHeader": "操作",
+    "deleteLabel": "記録を削除"
+  },
+  "charts": {
+    "noDataWeight": "進捗グラフを表示するには、少なくとも2つの体重記録を入力してください。",
+    "noDataBmi": "BMI推移グラフを表示するには、少なくとも2つの体重記録を入力してください。",
+    "weightLabel": "体重",
+    "bmiLabel": "BMI",
+    "yAxisLabelWeight": "体重 ({{unit}})",
+    "yAxisLabelBmi": "BMI"
+  },
+  "achievements": {
+    "title": "実績",
+    "modalTitle": "新しい実績をアンロックしました！",
+    "modalClose": "素晴らしい！",
+    "firstStep": {
+      "title": "最初の一歩",
+      "description": "最初の体重を記録しました。旅の始まりです！"
+    },
+    "fivePercent": {
+      "title": "進捗中",
+      "description": "開始時の体重の5%を減量しました。その調子で！"
+    },
+    "tenPercent": {
+      "title": "絶好調！",
+      "description": "開始時の体重の10%を減量しました。素晴らしい！"
+    },
+    "bmiImproved": {
+      "title": "より健康に",
+      "description": "BMIカテゴリーが改善されました。大きな節目です！"
+    },
+    "goalReached": {
+      "title": "目標達成！",
+      "description": "目標体重に到達しました。おめでとうございます！"
+    }
+  }
+}

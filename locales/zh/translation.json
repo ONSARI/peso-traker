@@ -1,0 +1,144 @@
+
+{
+  "auth": {
+    "loading": "加载中...",
+    "verifyTitle": "验证您的手机",
+    "verifyInstruction": "请输入我们发送到您手机 {{phone}} 的6位数验证码。",
+    "verifyButton": "验证并继续",
+    "verifyingButton": "验证中...",
+    "backToSignup": "返回注册",
+    "signupTitle": "创建您的账户",
+    "signupInstruction": "请填写您的详细信息以开始使用。",
+    "namePlaceholder": "您的姓名",
+    "dobLabel": "出生日期",
+    "heightUnitLabel": "身高单位",
+    "cm": "厘米",
+    "ft": "英尺",
+    "heightPlaceholderCm": "您的身高（厘米，例如：175）",
+    "ftPlaceholder": "英尺",
+    "inPlaceholder": "英寸",
+    "invalidHeightError": "请输入有效的身高。",
+    "passwordPlaceholder": "您的密码",
+    "phonePlaceholder": "电话号码",
+    "phoneVerificationNotice": "您将收到一条短信以进行验证。",
+    "signupButton": "注册",
+    "signingUpButton": "注册中...",
+    "switchToLogin": "已经有账户了？登录",
+    "loginTitle": "欢迎回来！",
+    "loginInstruction": "登录您的账户以继续。",
+    "loginPhonePlaceholder": "您的电话号码",
+    "loginButton": "登录",
+    "loggingInButton": "加载中...",
+    "switchToSignup": "还没有账户？注册",
+    "otpSuccessMessage": "注册即将完成！请检查您的手机以获取验证码。",
+    "profileCreationError": "验证成功！但我们无法保存您的个人资料：{{message}}。请尝试重新注册。"
+  },
+  "header": {
+    "greeting": "嗨，{{name}}",
+    "editName": "编辑姓名",
+    "logout": "登出"
+  },
+  "dashboard": {
+    "weightTrend": "体重趋势",
+    "bmiTrend": "BMI趋势",
+    "profileFetchError": "无法加载您的个人资料。请检查以下信息以解决问题。",
+    "weightsFetchError": "无法加载您的体重记录。请检查以下信息以解决问题。",
+    "syncErrorTitle": "同步错误",
+    "syncErrorBody": "我们检测到了一个有效的会话，但找不到您的个人资料。这可能是一个临时错误。",
+    "dataErrorTitle": "加载数据时出错",
+    "rlsErrorTitle": "可能的原因和解决方案",
+    "rlsErrorBody": "此错误几乎总是因为 <1>profiles</1> 和 <1>weights</1> 表没有正确的行级安全（RLS）策略。没有这些策略，您的应用程序无权读取数据。",
+    "rlsErrorSolution": "<1>解决方案：</1> 前往您的 Supabase 仪表板中的 <3>SQL 编辑器</3>，并运行 RLS 设置脚本以创建必要的策略。",
+    "tryAgainButton": "登出并重试"
+  },
+  "bmiCard": {
+    "title": "您的状态",
+    "lastWeight": "最新体重",
+    "height": "身高",
+    "bmiLabel": "您的BMI",
+    "notAvailable": "无",
+    "goalWeight": "目标体重",
+    "setGoal": "设定目标",
+    "goalReached": "目标达成！🎉",
+    "toLose": "需减重",
+    "toGain": "需增重",
+    "underweight": "体重过轻",
+    "normal": "正常体重",
+    "overweight": "超重",
+    "obesity": "肥胖",
+    "goalProgress": {
+      "title": "目标进度",
+      "progressComplete": "已完成 {{percentage}}%",
+      "startLabel": "开始",
+      "goalLabel": "目标"
+    },
+    "progress": {
+      "title": "进展",
+      "allTime": "从开始",
+      "sevenDays": "最近7天",
+      "thirtyDays": "最近30天",
+      "oneYear": "最近一年",
+      "weightChange": "体重变化",
+      "bmiChange": "BMI变化 (%)"
+    },
+    "units": {
+      "title": "单位偏好",
+      "weight": "体重",
+      "height": "身高",
+      "kg": "公斤",
+      "lbs": "磅",
+      "cm": "厘米",
+      "ft": "英尺",
+      "in": "英寸"
+    }
+  },
+  "weightForm": {
+    "title": "添加体重记录",
+    "dateLabel": "日期",
+    "weightLabel": "体重 ({{unit}})",
+    "weightPlaceholder": "例如：75.5",
+    "saveButton": "保存体重",
+    "validationError": "请输入有效的体重并选择日期。"
+  },
+  "history": {
+    "title": "体重历史记录",
+    "noEntries": "暂无体重记录。添加一条以开始！",
+    "dateHeader": "日期",
+    "weightHeader": "体重 ({{unit}})",
+    "actionsHeader": "操作",
+    "deleteLabel": "删除记录"
+  },
+  "charts": {
+    "noDataWeight": "输入至少两个体重记录以查看您的进度图表。",
+    "noDataBmi": "输入至少两个体重记录以查看您的BMI趋势图表。",
+    "weightLabel": "体重",
+    "bmiLabel": "BMI",
+    "yAxisLabelWeight": "体重 ({{unit}})",
+    "yAxisLabelBmi": "BMI"
+  },
+  "achievements": {
+    "title": "成就",
+    "modalTitle": "解锁新成就！",
+    "modalClose": "太棒了！",
+    "firstStep": {
+      "title": "第一步",
+      "description": "您已记录第一次体重。旅程开始了！"
+    },
+    "fivePercent": {
+      "title": "取得进展",
+      "description": "您已减掉起始体重的5%。继续努力！"
+    },
+    "tenPercent": {
+      "title": "势头正劲！",
+      "description": "您已减掉起始体重的10%。太不可思议了！"
+    },
+    "bmiImproved": {
+      "title": "更健康的您",
+      "description": "您已改善您的BMI类别。这是一个重要的里程碑！"
+    },
+    "goalReached": {
+      "title": "目标粉碎者！",
+      "description": "您已达到目标体重。恭喜！"
+    }
+  }
+}

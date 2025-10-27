@@ -1,0 +1,144 @@
+
+{
+  "auth": {
+    "loading": "Cargando...",
+    "verifyTitle": "Verifica tu Teléfono",
+    "verifyInstruction": "Introduce el código de 6 dígitos que te hemos enviado a {{phone}}.",
+    "verifyButton": "Verificar y Entrar",
+    "verifyingButton": "Verificando...",
+    "backToSignup": "Volver al registro",
+    "signupTitle": "Crea tu Cuenta",
+    "signupInstruction": "Completa tus datos para empezar.",
+    "namePlaceholder": "Tu nombre",
+    "dobLabel": "Fecha de nacimiento",
+    "heightUnitLabel": "Unidad de Altura",
+    "cm": "cm",
+    "ft": "ft",
+    "heightPlaceholderCm": "Tu altura en cm (ej: 175)",
+    "ftPlaceholder": "pies",
+    "inPlaceholder": "pulg",
+    "invalidHeightError": "Por favor, introduce una altura válida.",
+    "passwordPlaceholder": "Tu contraseña",
+    "phonePlaceholder": "Número de teléfono",
+    "phoneVerificationNotice": "Recibirás un SMS de verificación.",
+    "signupButton": "Registrarse",
+    "signingUpButton": "Registrando...",
+    "switchToLogin": "¿Ya tienes una cuenta? Inicia sesión",
+    "loginTitle": "¡Bienvenido de Vuelta!",
+    "loginInstruction": "Ingresa a tu cuenta para continuar.",
+    "loginPhonePlaceholder": "Tu número de teléfono",
+    "loginButton": "Iniciar Sesión",
+    "loggingInButton": "Cargando...",
+    "switchToSignup": "¿No tienes cuenta? Regístrate",
+    "otpSuccessMessage": "¡Registro casi completo! Revisa tu teléfono para obtener el código de verificación.",
+    "profileCreationError": "¡Verificación exitosa! Pero no pudimos guardar tu perfil: {{message}}. Por favor, intenta registrarte de nuevo."
+  },
+  "header": {
+    "greeting": "Hola, {{name}}",
+    "editName": "Editar nombre",
+    "logout": "Cerrar Sesión"
+  },
+  "dashboard": {
+    "weightTrend": "Tendencia de Peso",
+    "bmiTrend": "Tendencia de IMC",
+    "profileFetchError": "No se pudo cargar tu perfil. Revisa la información de abajo para solucionar el problema.",
+    "weightsFetchError": "No se pudieron cargar tus registros de peso. Revisa la información de abajo para solucionar el problema.",
+    "syncErrorTitle": "Error de Sincronización",
+    "syncErrorBody": "Hemos detectado una sesión activa pero no hemos podido encontrar tu perfil. Esto puede ser un error temporal.",
+    "dataErrorTitle": "Error al Cargar Datos",
+    "rlsErrorTitle": "Posible Causa y Solución",
+    "rlsErrorBody": "Este error casi siempre ocurre porque las tablas <1>profiles</1> y <1>weights</1> no tienen las políticas de seguridad (RLS) correctas. Sin ellas, tu aplicación no tiene permiso para leer los datos.",
+    "rlsErrorSolution": "<1>Solución:</1> Ve al <3>SQL Editor</3> en tu panel de Supabase y ejecuta el script de configuración de RLS para crear las políticas necesarias.",
+    "tryAgainButton": "Cerrar Sesión e Intentar de Nuevo"
+  },
+  "bmiCard": {
+    "title": "Tu Estado",
+    "lastWeight": "Último Peso",
+    "height": "Altura",
+    "bmiLabel": "Tu IMC",
+    "notAvailable": "N/A",
+    "goalWeight": "Peso Objetivo",
+    "setGoal": "Establecer Objetivo",
+    "goalReached": "¡Objetivo Alcanzado! 🎉",
+    "toLose": "por perder",
+    "toGain": "por ganar",
+    "underweight": "Bajo peso",
+    "normal": "Peso normal",
+    "overweight": "Sobrepeso",
+    "obesity": "Obesidad",
+    "goalProgress": {
+      "title": "Progreso Hacia la Meta",
+      "progressComplete": "{{percentage}}% Completado",
+      "startLabel": "Inicio",
+      "goalLabel": "Meta"
+    },
+    "progress": {
+      "title": "Progreso",
+      "allTime": "Desde el inicio",
+      "sevenDays": "Últimos 7 días",
+      "thirtyDays": "Últimos 30 días",
+      "oneYear": "Último año",
+      "weightChange": "Cambio de Peso",
+      "bmiChange": "Cambio IMC (%)"
+    },
+    "units": {
+      "title": "Preferencias de Unidades",
+      "weight": "Peso",
+      "height": "Altura",
+      "kg": "kg",
+      "lbs": "lbs",
+      "cm": "cm",
+      "ft": "ft",
+      "in": "pulg"
+    }
+  },
+  "weightForm": {
+    "title": "Añadir Registro de Peso",
+    "dateLabel": "Fecha",
+    "weightLabel": "Peso ({{unit}})",
+    "weightPlaceholder": "ej: 75.5",
+    "saveButton": "Guardar Peso",
+    "validationError": "Por favor, introduce un peso válido y selecciona una fecha."
+  },
+  "history": {
+    "title": "Historial de Peso",
+    "noEntries": "Aún no hay registros de peso. ¡Añade uno para empezar!",
+    "dateHeader": "Fecha",
+    "weightHeader": "Peso ({{unit}})",
+    "actionsHeader": "Acciones",
+    "deleteLabel": "Eliminar registro"
+  },
+  "charts": {
+    "noDataWeight": "Introduce al menos dos registros de peso para ver tu gráfico de progreso.",
+    "noDataBmi": "Introduce al menos dos registros de peso para ver tu gráfico de tendencia de IMC.",
+    "weightLabel": "Peso",
+    "bmiLabel": "IMC",
+    "yAxisLabelWeight": "Peso ({{unit}})",
+    "yAxisLabelBmi": "IMC"
+  },
+  "achievements": {
+    "title": "Logros",
+    "modalTitle": "¡Nuevo Logro Desbloqueado!",
+    "modalClose": "¡Genial!",
+    "firstStep": {
+      "title": "Primer Paso",
+      "description": "Has registrado tu primer peso. ¡El viaje comienza!"
+    },
+    "fivePercent": {
+      "title": "Haciendo Progreso",
+      "description": "Has perdido el 5% de tu peso corporal inicial. ¡Sigue así!"
+    },
+    "tenPercent": {
+      "title": "¡En Racha!",
+      "description": "Has perdido el 10% de tu peso corporal inicial. ¡Increíble!"
+    },
+    "bmiImproved": {
+      "title": "Más Saludable",
+      "description": "Has mejorado tu categoría de IMC. ¡Un hito importante!"
+    },
+    "goalReached": {
+      "title": "¡Meta Cumplida!",
+      "description": "Has alcanzado tu peso objetivo. ¡Felicidades!"
+    }
+  }
+}
