@@ -69,7 +69,9 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
         if (bmi < 18.5) return { category: t('bmiCard.underweight'), color: 'text-blue-500' };
         if (bmi < 25) return { category: t('bmiCard.normal'), color: 'text-green-500' };
         if (bmi < 30) return { category: t('bmiCard.overweight'), color: 'text-yellow-500' };
-        return { category: t('bmiCard.obesity'), color: 'text-red-500' };
+        if (bmi < 35) return { category: t('bmiCard.obesity1'), color: 'text-orange-500' };
+        if (bmi < 40) return { category: t('bmiCard.obesity2'), color: 'text-red-500' };
+        return { category: t('bmiCard.obesity3'), color: 'text-red-700' };
     };
 
     const calculateBMI = (weightKg: number, heightCm: number): number | null => {

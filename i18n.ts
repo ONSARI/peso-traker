@@ -85,7 +85,9 @@ const translationEN = {
     "underweight": "Underweight",
     "normal": "Normal weight",
     "overweight": "Overweight",
-    "obesity": "Obesity",
+    "obesity1": "Obesity Grade I",
+    "obesity2": "Obesity Grade II",
+    "obesity3": "Obesity Grade III (Morbid)",
     "goalProgress": {
       "title": "Goal Progress",
       "progressComplete": "{{percentage}}% Complete",
@@ -243,7 +245,9 @@ const translationES = {
     "underweight": "Bajo peso",
     "normal": "Peso normal",
     "overweight": "Sobrepeso",
-    "obesity": "Obesidad",
+    "obesity1": "Obesidad Grado I",
+    "obesity2": "Obesidad Grado II",
+    "obesity3": "Obesidad Grado III (Mórbida)",
     "goalProgress": {
       "title": "Progreso Hacia la Meta",
       "progressComplete": "{{percentage}}% Completado",
@@ -401,7 +405,9 @@ const translationPT = {
     "underweight": "Abaixo do peso",
     "normal": "Peso normal",
     "overweight": "Sobrepeso",
-    "obesity": "Obesidade",
+    "obesity1": "Obesidade Grau I",
+    "obesity2": "Obesidade Grau II",
+    "obesity3": "Obesidade Grau III (Mórbida)",
     "goalProgress": {
       "title": "Progresso da Meta",
       "progressComplete": "{{percentage}}% Completo",

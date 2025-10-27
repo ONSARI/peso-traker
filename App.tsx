@@ -536,7 +536,9 @@ const Dashboard: React.FC<DashboardProps> = ({ profile, weightEntries, theme, on
         if (bmi < 18.5) return 0; // Underweight
         if (bmi < 25) return 1;  // Normal
         if (bmi < 30) return 2;  // Overweight
-        return 3; // Obesity
+        if (bmi < 35) return 3;  // Obesity Grade I
+        if (bmi < 40) return 4;  // Obesity Grade II
+        return 5;                // Obesity Grade III
     };
     
     const calculateBMI = (weightKg: number, heightCm: number): number | null => {
