@@ -25,3 +25,10 @@ export interface Achievement {
   descriptionKey: string;
   Icon: React.FC<React.SVGProps<SVGSVGElement>>;
 }
+
+export interface Country {
+  name: string;
+  dial_code: string;
+  code: string;
+  flag: string;
+}

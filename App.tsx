@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
-import type { UserProfile, WeightEntry, Achievement } from './types';
+import type { UserProfile, WeightEntry, Achievement, Country } from './types';
 import { supabase } from './supabaseClient';
 import { BMICard } from './components/BMICard';
 import { WeightChart } from './components/WeightChart';
@@ -10,11 +10,10 @@ import { WeightHistory } from './components/WeightHistory';
 import { Achievements } from './components/Achievements';
 import { AchievementModal } from './components/AchievementModal';
 import { TrophyIcon, RocketIcon, StarIcon, ShieldCheckIcon } from './components/icons';
-import type { Country } from './countries';
-import { getCountriesByLanguage } from './countries';
 import { useTranslation, Trans } from 'react-i18next';
 import useLocalStorage from './hooks/useLocalStorage';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { getCountriesByLanguage } from './countries';
 
 
 // --- Components ---
@@ -25,174 +24,163 @@ const Auth: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState('');
 
-    const [view, setView] = useState<'login' | 'signup' | 'verifyPhone' | 'forgotPassword' | 'updatePassword'>('login');
-    const [loginLocalPhone, setLoginLocalPhone] = useState('');
-    const [localPhoneForReset, setLocalPhoneForReset] = useState('');
-    const [phoneForReset, setPhoneForReset] = useState('');
-
+    const [view, setView] = useState<'login' | 'signup' | 'otp' | 'forgotPassword' | 'updatePassword'>('login');
+    
+    // Form fields
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
+    const [otp, setOtp] = useState('');
+
+    // Country picker
+    const [countries, setCountries] = useState<Country[]>([]);
+    const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+    const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
+    const [countrySearch, setCountrySearch] = useState('');
+    const countryDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Profile data for signup
     const [name, setName] = useState('');
     const [dob, setDob] = useState('');
-    const [height, setHeight] = useState(''); // For cm
-    const [heightFt, setHeightFt] = useState(''); // For feet
-    const [heightIn, setHeightIn] = useState(''); // For inches
+    const [height, setHeight] = useState('');
+    const [heightFt, setHeightFt] = useState('');
+    const [heightIn, setHeightIn] = useState('');
     const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>('cm');
-    const [phone, setPhone] = useState(''); // Stores the full phone number for OTP verification
-    const [localPhone, setLocalPhone] = useState(''); // Stores just the local part of the number
-    const [countries, setCountries] = useState<Country[]>(getCountriesByLanguage(i18n.language));
-    const [selectedCountry, setSelectedCountry] = useState<Country>(countries.find(c => c.code === 'ES') || countries[0]);
-    const [phoneOtp, setPhoneOtp] = useState('');
+
+    // To hold data between steps
+    const [pendingAuthData, setPendingAuthData] = useState<{
+        fullPhone: string;
+        profileData?: Partial<UserProfile>;
+        flow: 'login' | 'signup' | 'reset';
+    } | null>(null);
 
     useEffect(() => {
-        setCountries(getCountriesByLanguage(i18n.language));
-        const currentSelectedCountry = countries.find(c => c.dial_code === selectedCountry.dial_code);
-        if(!currentSelectedCountry){
-            setSelectedCountry(countries[0]);
-        }
+        const loadedCountries = getCountriesByLanguage(i18n.language.split('-')[0]);
+        setCountries(loadedCountries);
+        // Default to a common country or auto-detect later
+        setSelectedCountry(loadedCountries.find(c => c.code === 'US') || loadedCountries[0]);
     }, [i18n.language]);
-
-    const handleSignUp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setMessage('');
-
-        const fullPhoneNumber = `${selectedCountry.dial_code}${localPhone}`;
-        setPhone(fullPhoneNumber);
-
-        let heightInCm: number;
-        if (heightUnit === 'cm') {
-            heightInCm = parseFloat(height);
-        } else {
-            const feet = parseFloat(heightFt) || 0;
-            const inches = parseFloat(heightIn) || 0;
-            heightInCm = (feet * 12 + inches) * 2.54;
-        }
-
-        if (isNaN(heightInCm) || heightInCm <= 0) {
-            setError(t('auth.invalidHeightError'));
-            setLoading(false);
-            return;
-        }
-
-        const { error } = await supabase.auth.signUp({
-            phone: fullPhoneNumber,
-            password,
-            options: {
-                data: {
-                    name,
-                    dob,
-                    height: heightInCm,
-                    height_unit: heightUnit,
-                    weight_unit: 'kg' // Default weight unit
-                },
-            },
-        });
-
-        if (error) {
-            setError(error.message);
-            setLoading(false);
-            return;
-        }
-
-        setMessage(t('auth.otpSuccessMessage'));
-        setView('verifyPhone');
-        setLoading(false);
-    };
     
-    const handleLogin = async (e: React.FormEvent) => {
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (countryDropdownRef.current && !countryDropdownRef.current.contains(event.target as Node)) {
+                setIsCountryDropdownOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handlePhoneAuth = async (e: React.FormEvent, flow: 'login' | 'signup' | 'reset') => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        
-        const credentials = { phone: `${selectedCountry.dial_code}${loginLocalPhone}`, password };
+        setMessage('');
 
-        const { error } = await supabase.auth.signInWithPassword(credentials);
-        if (error) {
-            setError(error.message);
-        }
-        setLoading(false);
-    };
-
-    const handleVerifyPhoneOtp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-
-        const { data, error } = await supabase.auth.verifyOtp({ phone, token: phoneOtp, type: 'sms' });
-
-        if (error) {
-            setError(error.message);
+        if (!selectedCountry || !phone) {
+            setError(t('auth.invalidPhoneError'));
             setLoading(false);
             return;
         }
 
-        // The profile will now be created by a trigger or by the auto-healing fetchData function on first login.
-        // This makes the signup flow simpler and more robust.
-        
-        setLoading(false);
-    };
+        const fullPhone = selectedCountry.dial_code + phone.replace(/\D/g, '');
 
-    const handlePasswordResetRequest = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setMessage('');
+        let profileData: Partial<UserProfile> | undefined;
+        if (flow === 'signup') {
+            let heightInCm: number;
+            if (heightUnit === 'cm') {
+                heightInCm = parseFloat(height);
+            } else {
+                const feet = parseFloat(heightFt) || 0;
+                const inches = parseFloat(heightIn) || 0;
+                heightInCm = (feet * 12 + inches) * 2.54;
+            }
+            if (isNaN(heightInCm) || heightInCm <= 0) {
+                setError(t('auth.invalidHeightError'));
+                setLoading(false);
+                return;
+            }
+            profileData = { name, dob, height: heightInCm, height_unit: heightUnit, weight_unit: 'kg' };
+        }
 
-        const fullPhoneNumber = `${selectedCountry.dial_code}${localPhoneForReset}`;
-        setPhoneForReset(fullPhoneNumber);
-
-        const { error } = await supabase.auth.signInWithOtp({
-            phone: fullPhoneNumber,
-        });
+        const { error } = await supabase.auth.signInWithOtp({ phone: fullPhone });
 
         if (error) {
             setError(error.message);
         } else {
-            setMessage(t('auth.resetCodeSuccessMessage'));
-            setView('updatePassword');
+            setPendingAuthData({ fullPhone, profileData, flow });
+            if (flow === 'reset') {
+                setMessage(t('auth.resetCodeSuccessMessage'));
+                setView('updatePassword');
+            } else {
+                 setMessage(t('auth.otpSuccessMessage'));
+                 setView('otp');
+            }
         }
         setLoading(false);
     };
 
-    const handleUpdatePassword = async (e: React.FormEvent) => {
+    const handleVerifyOtp = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!pendingAuthData || !otp) return;
+
         setLoading(true);
         setError(null);
-        setMessage('');
 
         const { data, error } = await supabase.auth.verifyOtp({
-            phone: phoneForReset,
-            token: phoneOtp,
+            phone: pendingAuthData.fullPhone,
+            token: otp,
             type: 'sms'
         });
 
         if (error) {
             setError(error.message);
+        } else if (data.session && pendingAuthData.flow === 'signup' && pendingAuthData.profileData) {
+            // User signed up, now create their profile
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .insert({ id: data.session.user.id, ...pendingAuthData.profileData });
+
+            if (profileError) {
+                setError(t('auth.profileCreationError', { message: profileError.message }));
+                // Note: user is logged in but profile failed. App needs to handle this state.
+                // For now, we'll show an error and they can try signing up again.
+                await supabase.auth.signOut();
+            }
+        }
+        // on success, the onAuthStateChange listener in App will handle the redirect.
+        setLoading(false);
+    };
+    
+    const handleUpdatePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!pendingAuthData || !otp || !password) return;
+
+        setLoading(true);
+        setError(null);
+        
+        const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+            phone: pendingAuthData.fullPhone,
+            token: otp,
+            type: 'sms'
+        });
+
+        if (verifyError) {
+            setError(verifyError.message);
             setLoading(false);
             return;
         }
-        
-        // OTP verification successful, user is now in a session, update password
-        const { error: updateError } = await supabase.auth.updateUser({
-            password: newPassword,
-        });
 
-        if (updateError) {
-            setError(updateError.message);
-        } else {
-            // Sign out for security after password change
-            await supabase.auth.signOut();
-            setMessage(t('auth.passwordUpdateSuccess'));
-            setView('login');
-            // Clear sensitive fields
-            setPhoneOtp('');
-            setNewPassword('');
-            setPhoneForReset('');
-            setLocalPhoneForReset('');
+        if (verifyData.session) {
+            const { error: updateError } = await supabase.auth.updateUser({ password });
+            if (updateError) {
+                setError(updateError.message);
+            } else {
+                setMessage(t('auth.passwordUpdateSuccess'));
+                setView('login');
+                setPassword('');
+                setOtp('');
+            }
         }
-        
         setLoading(false);
     };
 
@@ -202,63 +190,77 @@ const Auth: React.FC = () => {
         setError(null);
         setMessage('');
         setPassword('');
-        setLoginLocalPhone('');
-    }
+        setPhone('');
+        setOtp('');
+    };
+
+    const filteredCountries = countries.filter(c => 
+      c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+      c.dial_code.includes(countrySearch)
+    );
+
+    const PhoneInput = () => (
+        <div className="flex w-full border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-primary dark:border-gray-600">
+            <div ref={countryDropdownRef} className="relative">
+                 <button type="button" onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)} className="flex items-center gap-2 px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-l-lg">
+                    <span>{selectedCountry?.flag}</span>
+                    <span className="text-sm text-text-secondary dark:text-gray-400">{selectedCountry?.dial_code}</span>
+                 </button>
+                 {isCountryDropdownOpen && (
+                     <div className="absolute bottom-full mb-2 w-72 bg-card dark:bg-gray-700 rounded-lg shadow-lg border dark:border-gray-600 z-10">
+                         <div className="p-2">
+                            <input type="text" value={countrySearch} onChange={e => setCountrySearch(e.target.value)} placeholder={t('auth.searchCountryPlaceholder')} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-600 dark:text-white"/>
+                         </div>
+                         <ul className="max-h-60 overflow-y-auto">
+                             {filteredCountries.map(country => (
+                                 <li key={country.code}>
+                                     <button type="button" onClick={() => { setSelectedCountry(country); setIsCountryDropdownOpen(false); setCountrySearch(''); }} className="w-full text-left flex items-center gap-3 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                        <span className="text-xl">{country.flag}</span>
+                                        <span className="flex-grow text-text-primary dark:text-gray-200">{country.name}</span>
+                                        <span className="text-text-secondary dark:text-gray-400">{country.dial_code}</span>
+                                     </button>
+                                 </li>
+                             ))}
+                         </ul>
+                     </div>
+                 )}
+            </div>
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('auth.phonePlaceholder')} required className="w-full px-4 py-2 border-0 bg-transparent focus:ring-0 dark:text-white" />
+        </div>
+    );
+    
+    const renderOtpScreen = (onSubmit: (e: React.FormEvent) => void, titleKey: string, instructionKey: string, buttonKey: string, verifyingKey: string) => (
+        <>
+            <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t(titleKey)}</h2>
+            <p className="text-text-secondary dark:text-gray-400 mb-6">{t(instructionKey, { phone: pendingAuthData?.fullPhone })}</p>
+            <form noValidate onSubmit={onSubmit} className="flex flex-col items-center justify-center gap-4">
+                <input type="text" inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder={t('auth.otpPlaceholder')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white text-center tracking-[0.5em]" maxLength={6} />
+                {view === 'updatePassword' && (
+                     <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('auth.newPasswordPlaceholder')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                )}
+                <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
+                    {loading ? t(verifyingKey) : t(buttonKey)}
+                </button>
+            </form>
+             <button onClick={() => switchView('login')} className="text-sm text-primary hover:underline mt-4">
+                {t('auth.backToLogin')}
+            </button>
+        </>
+    );
 
     const renderContent = () => {
         switch (view) {
-             case 'updatePassword':
-                return (
-                    <>
-                        <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.updatePasswordTitle')}</h2>
-                        <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.updatePasswordInstruction', { phone: phoneForReset })}</p>
-                        <form noValidate onSubmit={handleUpdatePassword} className="flex flex-col items-center justify-center gap-4">
-                            <input type="tel" value={phoneOtp} onChange={(e) => setPhoneOtp(e.target.value)} placeholder={t('auth.otpPlaceholder')} required maxLength={6} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary text-center tracking-[1rem] dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t('auth.newPasswordPlaceholder')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                            <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
-                                {loading ? t('auth.updatingPasswordButton') : t('auth.updatePasswordButton')}
-                            </button>
-                        </form>
-                         <button onClick={() => setView('login')} className="text-sm text-primary hover:underline mt-4">
-                            {t('auth.backToLogin')}
-                        </button>
-                    </>
-                );
+            case 'otp':
+                return renderOtpScreen(handleVerifyOtp, 'auth.verifyTitle', 'auth.verifyInstruction', 'auth.verifyButton', 'auth.verifyingButton');
+            case 'updatePassword':
+                return renderOtpScreen(handleUpdatePassword, 'auth.updatePasswordTitle', 'auth.updatePasswordInstruction', 'auth.updatePasswordButton', 'auth.updatingPasswordButton');
             case 'forgotPassword':
                 return (
                      <>
                         <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.forgotPasswordTitle')}</h2>
                         <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.forgotPasswordInstruction')}</p>
-                        <form noValidate onSubmit={handlePasswordResetRequest} className="flex flex-col items-center justify-center gap-4">
-                            <div className="w-full">
-                                <div className="flex rtl:flex-row-reverse">
-                                     <select
-                                        id="country-code-reset"
-                                        value={selectedCountry.dial_code}
-                                        onChange={(e) => {
-                                            const country = countries.find(c => c.dial_code === e.target.value);
-                                            if (country) setSelectedCountry(country);
-                                        }}
-                                        className="bg-gray-100 border border-gray-300 rounded-l-lg rtl:rounded-l-none rtl:rounded-r-lg border-r-0 rtl:border-r rtl:border-l-0 pl-3 pr-4 rtl:pl-4 rtl:pr-3 py-2 text-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
-                                        aria-label="Country code"
-                                    >
-                                        {countries.map((country) => (
-                                            <option key={country.code} value={country.dial_code}>
-                                                {country.flag} {country.dial_code}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        id="phone-input-reset"
-                                        type="tel"
-                                        value={localPhoneForReset}
-                                        onChange={(e) => setLocalPhoneForReset(e.target.value.replace(/[^0-9]/g, ''))}
-                                        placeholder={t('auth.phonePlaceholder')}
-                                        required
-                                        className="w-full px-4 py-2 text-lg border border-gray-300 rounded-r-lg rtl:rounded-r-none rtl:rounded-l-lg focus:ring-2 focus:ring-primary focus:border-transparent z-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    />
-                                </div>
-                            </div>
+                        <form noValidate onSubmit={(e) => handlePhoneAuth(e, 'reset')} className="flex flex-col items-center justify-center gap-4">
+                            <PhoneInput />
                             <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
                                 {loading ? t('auth.sendingCodeButton') : t('auth.sendResetCodeButton')}
                             </button>
@@ -268,28 +270,12 @@ const Auth: React.FC = () => {
                         </button>
                     </>
                 );
-            case 'verifyPhone':
-                return (
-                    <>
-                        <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.verifyTitle')}</h2>
-                        <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.verifyInstruction', { phone })}</p>
-                        <form noValidate onSubmit={handleVerifyPhoneOtp} className="flex flex-col items-center justify-center gap-4">
-                            <input type="tel" value={phoneOtp} onChange={(e) => setPhoneOtp(e.target.value)} placeholder="123456" required maxLength={6} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary text-center tracking-[1rem] dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                            <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
-                                {loading ? t('auth.verifyingButton') : t('auth.verifyButton')}
-                            </button>
-                        </form>
-                         <button onClick={() => setView('signup')} className="text-sm text-primary hover:underline mt-4">
-                            {t('auth.backToSignup')}
-                        </button>
-                    </>
-                );
             case 'signup':
                 return (
                     <>
                         <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.signupTitle')}</h2>
                         <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.signupInstruction')}</p>
-                        <form noValidate onSubmit={handleSignUp} className="flex flex-col items-center justify-center gap-4">
+                        <form noValidate onSubmit={(e) => handlePhoneAuth(e, 'signup')} className="flex flex-col items-center justify-center gap-4">
                             <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder={t('auth.namePlaceholder')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
                             <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" aria-label={t('auth.dobLabel')} />
                             
@@ -311,38 +297,9 @@ const Auth: React.FC = () => {
                                 )}
                             </div>
 
-                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('auth.passwordPlaceholder')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                           <PhoneInput />
                             
-                            <div className="w-full">
-                                <div className="flex rtl:flex-row-reverse">
-                                    <select
-                                        id="country-code"
-                                        value={selectedCountry.dial_code}
-                                        onChange={(e) => {
-                                            const country = countries.find(c => c.dial_code === e.target.value);
-                                            if (country) setSelectedCountry(country);
-                                        }}
-                                        className="bg-gray-100 border border-gray-300 rounded-l-lg rtl:rounded-l-none rtl:rounded-r-lg border-r-0 rtl:border-r rtl:border-l-0 pl-3 pr-4 rtl:pl-4 rtl:pr-3 py-2 text-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
-                                        aria-label="Country code"
-                                    >
-                                        {countries.map((country) => (
-                                            <option key={country.code} value={country.dial_code}>
-                                                {country.flag} {country.name} ({country.dial_code})
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        id="phone-input"
-                                        type="tel"
-                                        value={localPhone}
-                                        onChange={(e) => setLocalPhone(e.target.value.replace(/[^0-9]/g, ''))}
-                                        placeholder={t('auth.phonePlaceholder')}
-                                        required
-                                        className="w-full px-4 py-2 text-lg border border-gray-300 rounded-r-lg rtl:rounded-r-none rtl:rounded-l-lg focus:ring-2 focus:ring-primary focus:border-transparent z-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    />
-                                </div>
-                                <p className="text-xs text-text-secondary dark:text-gray-400 mt-1 text-left rtl:text-right">{t('auth.phoneVerificationNotice')}</p>
-                            </div>
+                            <p className="text-xs text-text-secondary dark:text-gray-400 mt-1 text-left rtl:text-right">{t('auth.phoneVerificationNotice')}</p>
 
                             <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
                                 {loading ? t('auth.signingUpButton') : t('auth.signupButton')}
@@ -359,38 +316,9 @@ const Auth: React.FC = () => {
                     <>
                         <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.loginTitle')}</h2>
                         <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.loginInstruction')}</p>
-                        <form noValidate onSubmit={handleLogin} className="flex flex-col items-center justify-center gap-4">
-                            <div className="w-full">
-                                <div className="flex rtl:flex-row-reverse">
-                                    <select
-                                        id="country-code-login"
-                                        value={selectedCountry.dial_code}
-                                        onChange={(e) => {
-                                            const country = countries.find(c => c.dial_code === e.target.value);
-                                            if (country) setSelectedCountry(country);
-                                        }}
-                                        className="bg-gray-100 border border-gray-300 rounded-l-lg rtl:rounded-l-none rtl:rounded-r-lg border-r-0 rtl:border-r rtl:border-l-0 pl-3 pr-4 rtl:pl-4 rtl:pr-3 py-2 text-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
-                                        aria-label="Country code"
-                                    >
-                                        {countries.map((country) => (
-                                            <option key={country.code} value={country.dial_code}>
-                                                {country.flag} {country.dial_code}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <input
-                                        id="phone-input-login"
-                                        type="tel"
-                                        value={loginLocalPhone}
-                                        onChange={(e) => setLoginLocalPhone(e.target.value.replace(/[^0-9]/g, ''))}
-                                        placeholder={t('auth.loginPhonePlaceholder')}
-                                        required
-                                        className="w-full px-4 py-2 text-lg border border-gray-300 rounded-r-lg rtl:rounded-r-none rtl:rounded-l-lg focus:ring-2 focus:ring-primary focus:border-transparent z-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                    />
-                                </div>
-                            </div>
-                            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('auth.passwordPlaceholder')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
-                            <button onClick={() => switchView('forgotPassword')} type="button" className="text-sm text-text-secondary dark:text-gray-400 hover:text-primary hover:underline self-end">
+                        <form noValidate onSubmit={(e) => handlePhoneAuth(e, 'login')} className="flex flex-col items-center justify-center gap-4">
+                            <PhoneInput />
+                             <button onClick={() => switchView('forgotPassword')} type="button" className="text-sm text-text-secondary dark:text-gray-400 hover:text-primary hover:underline self-end">
                                 {t('auth.forgotPasswordLink')}
                             </button>
                             <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
@@ -429,484 +357,355 @@ const DarkModeToggle: React.FC<{ theme: 'light' | 'dark'; onToggle: () => void }
     >
       {theme === 'dark' ? (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M12 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12z" />
         </svg>
       ) : (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 0 1 8.646 3.646 9.003 9.003 0 0 0 12 21a9.003 9.003 0 0 0 8.354-5.646z" />
         </svg>
       )}
     </button>
   );
 };
 
-const Header: React.FC<{ name: string; onNameChange: (name: string) => void; onSignOut: () => void; theme: 'light' | 'dark'; onThemeToggle: () => void; }> = ({ name, onNameChange, onSignOut, theme, onThemeToggle }) => {
-    const { t } = useTranslation();
-    const [isEditingName, setIsEditingName] = useState(false);
-    const [newName, setNewName] = useState(name || '');
-
-    useEffect(() => {
-        setNewName(name || '');
-    }, [name]);
-
-    const handleNameSave = () => {
-        if (newName.trim()) {
-            onNameChange(newName.trim());
-            setIsEditingName(false);
-        }
-    };
-
-    return (
-        <header className="bg-card dark:bg-gray-800 shadow-md sticky top-0 z-10">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center rtl:flex-row-reverse">
-                <div className="flex items-center gap-3 rtl:flex-row-reverse">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15.59L7.41 14l1.41-1.41L11 15.17l4.59-4.59L17 12l-6 6z"/>
-                    </svg>
-                    <h1 className="text-2xl md:text-3xl font-bold text-primary">PesoZen</h1>
-                </div>
-
-                <div className="flex items-center gap-4 rtl:flex-row-reverse">
-                    {isEditingName ? (
-                        <div className="flex items-center gap-2">
-                           <input 
-                                type="text" 
-                                value={newName} 
-                                onChange={(e) => setNewName(e.target.value)} 
-                                className="px-2 py-1 border border-gray-300 rounded-md text-text-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" 
-                                onKeyDown={(e) => e.key === 'Enter' && handleNameSave()} 
-                                autoFocus 
-                            />
-                            <button onClick={handleNameSave} className="text-green-500 hover:text-green-700 p-1">✓</button>
-                            <button onClick={() => { setIsEditingName(false); setNewName(name || ''); }} className="text-red-500 hover:text-red-700 p-1">×</button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <span className="text-text-secondary dark:text-gray-400 hidden sm:inline">{t('header.greeting', { name })}</span>
-                             <button onClick={() => setIsEditingName(true)} className="text-text-secondary dark:text-gray-400 hover:text-primary" aria-label={t('header.editName')}>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" /></svg>
-                            </button>
-                        </div>
-                    )}
-                    <LanguageSwitcher />
-                    <DarkModeToggle theme={theme} onToggle={onThemeToggle} />
-                     <button onClick={onSignOut} className="bg-secondary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-80 transition-colors">{t('header.logout')}</button>
-                </div>
-            </div>
-        </header>
-    );
-};
-
-interface DashboardProps {
-    profile: UserProfile;
-    weightEntries: WeightEntry[];
-    theme: 'light' | 'dark';
-    onThemeToggle: () => void;
-    onProfileUpdate: (updates: Partial<UserProfile>) => void;
-    onAddWeightEntry: (weight: number, date: string) => void;
-    onDeleteWeightEntry: (id: number) => void;
-}
-
-const Dashboard: React.FC<DashboardProps> = ({ profile, weightEntries, theme, onThemeToggle, onProfileUpdate, onAddWeightEntry, onDeleteWeightEntry }) => {
-    const { t } = useTranslation();
-    const [activeChart, setActiveChart] = useState<'weight' | 'bmi'>('weight');
-
-    const sortedEntries = useMemo(() => {
-        return [...weightEntries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }, [weightEntries]);
-
-    // --- Achievements Logic ---
-    const ALL_ACHIEVEMENTS: Omit<Achievement, 'Icon'>[] = useMemo(() => [
-        { id: 'FIRST_STEP', titleKey: 'achievements.firstStep.title', descriptionKey: 'achievements.firstStep.description' },
-        { id: 'FIVE_PERCENT', titleKey: 'achievements.fivePercent.title', descriptionKey: 'achievements.fivePercent.description' },
-        { id: 'TEN_PERCENT', titleKey: 'achievements.tenPercent.title', descriptionKey: 'achievements.tenPercent.description' },
-        { id: 'BMI_IMPROVED', titleKey: 'achievements.bmiImproved.title', descriptionKey: 'achievements.bmiImproved.description' },
-        { id: 'GOAL_REACHED', titleKey: 'achievements.goalReached.title', descriptionKey: 'achievements.goalReached.description' },
-    ], []);
-
-    const ICONS_MAP: { [key: string]: React.FC<React.SVGProps<SVGSVGElement>> } = {
-        FIRST_STEP: TrophyIcon,
-        FIVE_PERCENT: RocketIcon,
-        TEN_PERCENT: RocketIcon,
-        BMI_IMPROVED: ShieldCheckIcon,
-        GOAL_REACHED: StarIcon,
-    };
-
-    const getBmiCategoryValue = (bmi: number): number => {
-        if (bmi < 18.5) return 0; // Underweight
-        if (bmi < 25) return 1;  // Normal
-        if (bmi < 30) return 2;  // Overweight
-        if (bmi < 35) return 3;  // Obesity Grade I
-        if (bmi < 40) return 4;  // Obesity Grade II
-        return 5;                // Obesity Grade III
-    };
-    
-    const calculateBMI = (weightKg: number, heightCm: number): number | null => {
-        if (!heightCm || heightCm <= 0 || !weightKg || weightKg <= 0) return null;
-        const heightInMeters = heightCm / 100;
-        return weightKg / (heightInMeters * heightInMeters);
-    }
-
-    const unlockedAchievementIds = useMemo(() => {
-        const unlocked = new Set<string>();
-        if (!sortedEntries.length || !profile.height) return unlocked;
-
-        const firstEntry = sortedEntries[0];
-        const latestEntry = sortedEntries[sortedEntries.length - 1];
-
-        // 1. First Step
-        if (sortedEntries.length >= 1) {
-            unlocked.add('FIRST_STEP');
-        }
-
-        // 2. Weight Loss Milestones
-        const weightLost = firstEntry.weight - latestEntry.weight;
-        if (weightLost > 0) {
-            if (weightLost >= firstEntry.weight * 0.05) unlocked.add('FIVE_PERCENT');
-            if (weightLost >= firstEntry.weight * 0.10) unlocked.add('TEN_PERCENT');
-        }
-
-        // 3. BMI Improvement
-        const initialBmi = calculateBMI(firstEntry.weight, profile.height);
-        const latestBmi = calculateBMI(latestEntry.weight, profile.height);
-        if (initialBmi && latestBmi) {
-            if (getBmiCategoryValue(latestBmi) < getBmiCategoryValue(initialBmi)) {
-                unlocked.add('BMI_IMPROVED');
-            }
-        }
-        
-        // 4. Goal Reached (Final Goal)
-        if (profile.goal_weight_final && Math.abs(latestEntry.weight - profile.goal_weight_final) < 0.1) {
-            unlocked.add('GOAL_REACHED');
-        }
-
-        return unlocked;
-    }, [sortedEntries, profile]);
-
-    const [newlyUnlocked, setNewlyUnlocked] = useState<Achievement | null>(null);
-    const [seenAchievements, setSeenAchievements] = useLocalStorage<string[]>('seenAchievements', []);
-
-    useEffect(() => {
-        const unseenUnlocked = [...unlockedAchievementIds].filter(id => !seenAchievements.includes(id));
-        if (unseenUnlocked.length > 0) {
-            const achievementToCelebrate = ALL_ACHIEVEMENTS.find(ach => ach.id === unseenUnlocked[0]);
-            if(achievementToCelebrate) {
-                setNewlyUnlocked({ ...achievementToCelebrate, Icon: ICONS_MAP[achievementToCelebrate.id] });
-                setSeenAchievements(prev => [...prev, ...unseenUnlocked]);
-            }
-        }
-    }, [unlockedAchievementIds, seenAchievements, setSeenAchievements, ALL_ACHIEVEMENTS, ICONS_MAP]);
-    
-    const bmiData = useMemo(() => {
-        if (!profile.height || profile.height <= 0) return [];
-        const heightInMeters = profile.height / 100;
-        return sortedEntries.map(entry => ({
-            date: entry.date,
-            bmi: parseFloat((entry.weight / (heightInMeters * heightInMeters)).toFixed(1))
-        }));
-    }, [sortedEntries, profile.height]);
-
-    const weightUnit = profile.weight_unit || 'kg';
-
-    return (
-         <>
-            <Header 
-                name={profile.name} 
-                onNameChange={(name) => onProfileUpdate({ name })} 
-                onSignOut={() => supabase.auth.signOut()}
-                theme={theme}
-                onThemeToggle={onThemeToggle}
-            />
-            <AchievementModal achievement={newlyUnlocked} onClose={() => setNewlyUnlocked(null)} />
-            <main className="container mx-auto p-4 sm:p-6 lg:p-8">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-                    <div className="lg:col-span-1 flex flex-col gap-6 lg:gap-8">
-                        <BMICard profile={profile} entries={sortedEntries} onProfileUpdate={onProfileUpdate} />
-                        <WeightForm onAddEntry={onAddWeightEntry} weightUnit={weightUnit}/>
-                         <Achievements 
-                            allAchievements={ALL_ACHIEVEMENTS.map(a => ({...a, Icon: ICONS_MAP[a.id]}))}
-                            unlockedIds={unlockedAchievementIds} 
-                        />
-                    </div>
-                    <div className="lg:col-span-2 bg-card dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
-                        <div className="flex border-b border-gray-200 dark:border-gray-700">
-                           <button
-                               onClick={() => setActiveChart('weight')}
-                               className={`py-2 px-4 font-semibold transition-colors duration-200 ${activeChart === 'weight' ? 'border-b-2 border-primary text-primary' : 'text-text-secondary dark:text-gray-400 hover:text-text-primary dark:hover:text-gray-200'}`}
-                           >
-                               {t('dashboard.weightTrend')}
-                           </button>
-                           <button
-                               onClick={() => setActiveChart('bmi')}
-                               className={`py-2 px-4 font-semibold transition-colors duration-200 ${activeChart === 'bmi' ? 'border-b-2 border-primary text-primary' : 'text-text-secondary dark:text-gray-400 hover:text-text-primary dark:hover:text-gray-200'}`}
-                           >
-                               {t('dashboard.bmiTrend')}
-                           </button>
-                       </div>
-                       <div className="mt-4">
-                           {activeChart === 'weight' ? (
-                               <WeightChart data={sortedEntries} weightUnit={weightUnit} theme={theme} />
-                           ) : (
-                               <BMIChart data={bmiData} theme={theme} />
-                           )}
-                       </div>
-                    </div>
-                    <div className="lg:col-span-3">
-                        <WeightHistory entries={sortedEntries} onDeleteEntry={onDeleteWeightEntry} weightUnit={weightUnit} />
-                    </div>
-                </div>
-            </main>
-        </>
-    )
-}
-
 
 const App: React.FC = () => {
-    const { t, i18n } = useTranslation();
-    const [session, setSession] = useState<Session | null>(null);
-    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-    const [weights, setWeights] = useState<WeightEntry[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [fetchError, setFetchError] = useState<string | null>(null);
-    const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
+  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [entries, setEntries] = useState<WeightEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<{title: string, body: React.ReactNode} | null>(null);
+  const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
+  const [unlockedAchievements, setUnlockedAchievements] = useLocalStorage<string[]>('unlocked_achievements', []);
+  const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
+  const { t } = useTranslation();
 
-    useEffect(() => {
-        const root = window.document.documentElement;
-        root.classList.remove(theme === 'light' ? 'dark' : 'light');
-        root.classList.add(theme);
-    }, [theme]);
+  const unlockedAchievementIds = useMemo(() => new Set(unlockedAchievements), [unlockedAchievements]);
 
-    const handleThemeToggle = () => {
-        setTheme(theme === 'light' ? 'dark' : 'light');
-    };
+  const allAchievements: Achievement[] = useMemo(() => [
+    { id: 'first_step', titleKey: 'achievements.firstStep.title', descriptionKey: 'achievements.firstStep.description', Icon: RocketIcon },
+    { id: 'five_percent_loss', titleKey: 'achievements.fivePercent.title', descriptionKey: 'achievements.fivePercent.description', Icon: StarIcon },
+    { id: 'ten_percent_loss', titleKey: 'achievements.tenPercent.title', descriptionKey: 'achievements.tenPercent.description', Icon: StarIcon },
+    { id: 'bmi_improved', titleKey: 'achievements.bmiImproved.title', descriptionKey: 'achievements.bmiImproved.description', Icon: ShieldCheckIcon },
+    { id: 'goal_reached', titleKey: 'achievements.goalReached.title', descriptionKey: 'achievements.goalReached.description', Icon: TrophyIcon },
+  ], []);
 
-     useEffect(() => {
-        document.documentElement.lang = i18n.language;
-        document.documentElement.dir = i18n.dir(i18n.language);
-    }, [i18n, i18n.language]);
+  const fetchData = useCallback(async (currentUser: User) => {
+    setError(null);
+    setLoading(true);
+    
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', currentUser.id)
+      .single();
 
-    const fetchData = useCallback(async (currentSession: Session) => {
-        setLoading(true);
-        setFetchError(null);
+    if (profileError || !profileData) {
+      console.error('Error fetching profile:', profileError);
+      if (profileError && profileError.message.includes("security policies")) {
+         setError({
+            title: t('dashboard.dataErrorTitle'),
+            body: (
+                <>
+                    <p className="font-bold text-lg mb-2">{t('dashboard.rlsErrorTitle')}</p>
+                    <p className="mb-4"><Trans i18nKey="dashboard.rlsErrorBody" components={{ 1: <code className="bg-gray-200 dark:bg-gray-700 p-1 rounded text-sm" /> }} /></p>
+                    <p><Trans i18nKey="dashboard.rlsErrorSolution" components={{ 1: <strong />, 3: <strong className="font-semibold" /> }} /></p>
+                </>
+            )
+        });
+      } else {
+        setError({ title: t('dashboard.syncErrorTitle'), body: <p>{t('dashboard.syncErrorBody')}</p> });
+      }
+      setProfile(null);
+    } else {
+      setProfile(profileData);
+    }
+    
+    const { data: weightsData, error: weightsError } = await supabase
+      .from('weights')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('date', { ascending: true });
 
-        let { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', currentSession.user.id)
-            .single();
+    if (weightsError) {
+      console.error('Error fetching weights:', weightsError);
+    } else {
+      setEntries(weightsData || []);
+    }
+    setLoading(false);
+  }, [t]);
 
-        // Self-healing: If profile doesn't exist, create it.
-        if (profileError && profileError.code === 'PGRST116') { // PGRST116: "exact one row not found"
-             console.log("No profile found for user, creating one.");
-             const { name, dob, height } = currentSession.user.user_metadata;
-             const { data: newProfile, error: insertError } = await supabase
-                .from('profiles')
-                .insert({
-                    id: currentSession.user.id,
-                    name,
-                    dob,
-                    height,
-                })
-                .select()
-                .single();
-            
-            if(insertError) {
-                console.error(`Error creating profile:`, insertError.message);
-                setFetchError(t('dashboard.profileCreationError', { message: insertError.message }));
-                setLoading(false);
-                return;
-            }
-            profileData = newProfile;
-        } else if (profileError) {
-            console.error(`Error fetching profile:`, profileError.message);
-            setFetchError(t('dashboard.profileFetchError'));
-            setLoading(false);
-            return;
-        }
-
-
-        const fullProfile: UserProfile = {
-            ...profileData,
-            weight_unit: currentSession.user.user_metadata.weight_unit || 'kg',
-            height_unit: currentSession.user.user_metadata.height_unit || 'cm',
-            goal_weight_1: currentSession.user.user_metadata.goal_weight_1 || null,
-            goal_weight_2: currentSession.user.user_metadata.goal_weight_2 || null,
-            goal_weight_final: currentSession.user.user_metadata.goal_weight_final || null,
-        };
-        setUserProfile(fullProfile);
-
-        const { data: weightsData, error: weightsError } = await supabase
-            .from('weights')
-            .select('*')
-            .eq('user_id', currentSession.user.id);
-        
-        if (weightsError) {
-            console.error('Error fetching weights:', weightsError.message);
-            setFetchError(t('dashboard.weightsFetchError'));
-        } else {
-            setWeights(weightsData || []);
-        }
-        
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      if (currentUser) {
+        fetchData(currentUser);
+      } else {
+        setProfile(null);
+        setEntries([]);
         setLoading(false);
-    }, [t]);
+      }
+    });
 
-    useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-            if (session) {
-                fetchData(session);
-            } else {
-                setLoading(false);
-            }
-        });
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [fetchData]);
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-            setSession(newSession);
-            if (newSession) {
-                fetchData(newSession);
-            } else {
-                setUserProfile(null);
-                setWeights([]);
-                setFetchError(null);
-                setLoading(false);
-            }
-        });
+  const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
+    if (!user || !profile) return;
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id)
+      .select()
+      .single();
 
-        return () => {
-            subscription?.unsubscribe();
-        };
-    }, [fetchData]);
+    if (error) {
+      console.error('Error updating profile:', error);
+    } else if (data) {
+      setProfile(data);
+    }
+  }, [user, profile]);
 
-    const updateProfile = async (updates: Partial<UserProfile>) => {
-        if (!userProfile) return;
+  const addWeightEntry = useCallback(async (weightInKg: number, date: string) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('weights')
+      .insert([{ weight: weightInKg, date, user_id: user.id }])
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error adding weight entry:', error);
+    } else if (data) {
+      setEntries(prev => [...prev, data].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+    }
+  }, [user]);
 
-        const oldProfile = { ...userProfile };
-        const newProfile = { ...userProfile, ...updates };
-        setUserProfile(newProfile); // Optimistic UI update
+  const deleteWeightEntry = useCallback(async (id: number) => {
+    const { error } = await supabase.from('weights').delete().eq('id', id);
+    if (error) {
+      console.error('Error deleting weight entry:', error);
+    } else {
+      setEntries(prev => prev.filter(entry => entry.id !== id));
+    }
+  }, []);
 
-        const profileTableUpdates: { [key: string]: any } = {};
-        const userMetadataUpdates: { [key: string]: any } = {};
-        const validProfileKeys: (keyof UserProfile)[] = ['name', 'height', 'dob'];
+  const checkAchievements = useCallback(() => {
+    if (entries.length === 0 || !profile) return;
+    
+    const newUnlocks: string[] = [];
+    const startWeight = entries[0]?.weight;
+    const latestWeight = entries[entries.length - 1]?.weight;
 
-        Object.keys(updates).forEach(key => {
-            const typedKey = key as keyof UserProfile;
-            if (['weight_unit', 'height_unit', 'goal_weight_1', 'goal_weight_2', 'goal_weight_final'].includes(typedKey)) {
-                userMetadataUpdates[typedKey] = updates[typedKey];
-            } else if (validProfileKeys.includes(typedKey)) {
-                profileTableUpdates[typedKey] = updates[typedKey];
-            }
-        });
+    // 1. First Step
+    if (entries.length > 0 && !unlockedAchievementIds.has('first_step')) {
+        newUnlocks.push('first_step');
+    }
 
-        let hasError = false;
-
-        if (Object.keys(profileTableUpdates).length > 0) {
-            const { error } = await supabase.from('profiles').update(profileTableUpdates).eq('id', userProfile.id);
-            if (error) {
-                console.error("Error updating profile:", error.message);
-                hasError = true;
-            }
+    // Weight loss achievements
+    if (startWeight && latestWeight && latestWeight < startWeight) {
+        const percentageLost = ((startWeight - latestWeight) / startWeight) * 100;
+        // 2. 5% loss
+        if (percentageLost >= 5 && !unlockedAchievementIds.has('five_percent_loss')) {
+            newUnlocks.push('five_percent_loss');
         }
-
-        if (Object.keys(userMetadataUpdates).length > 0) {
-            const { error } = await supabase.auth.updateUser({ data: userMetadataUpdates });
-            if (error) {
-                console.error("Error updating user metadata:", error.message);
-                hasError = true;
-            }
+        // 3. 10% loss
+        if (percentageLost >= 10 && !unlockedAchievementIds.has('ten_percent_loss')) {
+            newUnlocks.push('ten_percent_loss');
         }
-
-        if (hasError) {
-            setUserProfile(oldProfile); // Revert on any error
-        }
+    }
+    
+    // 4. BMI Improved
+    const calculateBMI = (weightKg: number, heightCm: number) => {
+        if (!heightCm || heightCm <= 0) return null;
+        const heightM = heightCm / 100;
+        return weightKg / (heightM * heightM);
+    };
+    const getBmiCategory = (bmi: number) => {
+        if (bmi < 18.5) return 0; // Underweight
+        if (bmi < 25) return 1; // Normal
+        if (bmi < 30) return 2; // Overweight
+        if (bmi < 35) return 3; // Obesity I
+        if (bmi < 40) return 4; // Obesity II
+        return 5; // Obesity III
     };
 
-    const addWeightEntry = useCallback(async (weight: number, date: string) => {
-        if (!userProfile) return;
-        const existingEntry = weights.find(entry => entry.date === date);
-
-        if (existingEntry) {
-            const { data, error } = await supabase.from('weights').update({ weight }).eq('id', existingEntry.id).select().single();
-            if (error) return console.error(error.message);
-            if (data) {
-                setWeights(entries => entries.map(e => e.id === existingEntry.id ? data : e));
-            }
-        } else {
-            const { data, error } = await supabase.from('weights').insert({ date: date, weight: weight, user_id: userProfile.id }).select().single();
-            if (error) return console.error(error.message);
-            if(data) {
-                setWeights(prevEntries => [...prevEntries, data]);
-            }
+    if (profile.height && startWeight && latestWeight) {
+        const startBmi = calculateBMI(startWeight, profile.height);
+        const latestBmi = calculateBMI(latestWeight, profile.height);
+        if (startBmi && latestBmi && getBmiCategory(latestBmi) < getBmiCategory(startBmi) && !unlockedAchievementIds.has('bmi_improved')) {
+             newUnlocks.push('bmi_improved');
         }
-    }, [weights, userProfile]);
-
-    const deleteWeightEntry = useCallback(async (id: number) => {
-        const oldWeights = [...weights];
-        setWeights(prevEntries => prevEntries.filter(entry => entry.id !== id));
-        const { error } = await supabase.from('weights').delete().eq('id', id);
-        if (error) {
-            console.error("Error deleting weight:", error.message);
-            setWeights(oldWeights); // Revert on error
-        }
-    }, [weights]);
-    
-    if (loading) {
-        return <div className="min-h-screen flex items-center justify-center bg-background dark:bg-gray-900 text-text-secondary dark:text-gray-400">{t('auth.loading')}</div>;
     }
 
-    if (!session) {
-        return <Auth />;
+    // 5. Goal Reached
+    if (profile.goal_weight_final && latestWeight && latestWeight <= profile.goal_weight_final && !unlockedAchievementIds.has('goal_reached')) {
+      newUnlocks.push('goal_reached');
     }
-    
-    if (fetchError) {
-        return (
-            <div className="min-h-screen flex items-center justify-center text-center p-4 bg-background dark:bg-gray-900">
-                <div className="bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-lg">
-                    <h2 className="text-2xl font-bold text-red-600 mb-4">{t('dashboard.dataErrorTitle')}</h2>
-                    <p className="text-text-secondary dark:text-gray-400 mb-4">{fetchError}</p>
-                    <div className="bg-slate-50 dark:bg-gray-700/50 p-4 rounded-lg text-left rtl:text-right">
-                        <h3 className="font-bold text-text-primary dark:text-gray-200 mb-2">{t('dashboard.rlsErrorTitle')}</h3>
-                        <p className="text-sm text-text-secondary dark:text-gray-400">
-                            <Trans i18nKey="dashboard.rlsErrorBody">
-                                This error almost always occurs because the <strong>profiles</strong> and <strong>weights</strong> tables do not have the correct Row Level Security (RLS) policies. Without them, your application does not have permission to read the data.
-                            </Trans>
-                        </p>
-                        <p className="text-sm text-text-secondary dark:text-gray-400 mt-2">
-                             <Trans i18nKey="dashboard.rlsErrorSolution">
-                                <strong>Solution:</strong> Go to the <strong>SQL Editor</strong> in your Supabase dashboard and run the RLS setup script to create the necessary policies.
-                            </Trans>
-                        </p>
-                    </div>
-                    <button onClick={() => supabase.auth.signOut()} className="mt-6 bg-secondary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-80 transition-colors">
-                        {t('dashboard.tryAgainButton')}
-                    </button>
-                </div>
+
+    if (newUnlocks.length > 0) {
+      const achievementToShow = allAchievements.find(ach => ach.id === newUnlocks[0]);
+      setNewAchievement(achievementToShow || null);
+      setUnlockedAchievements(prev => [...prev, ...newUnlocks]);
+    }
+
+  }, [entries, profile, unlockedAchievementIds, setUnlockedAchievements, allAchievements]);
+
+  useEffect(() => {
+    checkAchievements();
+  }, [entries, checkAchievements]);
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+  };
+
+  const bmiChartData = useMemo(() => {
+    if (!profile?.height) return [];
+    return entries.map(entry => ({
+      date: entry.date,
+      bmi: (entry.weight / Math.pow(profile.height / 100, 2)),
+    }));
+  }, [entries, profile?.height]);
+
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState(profile?.name || '');
+
+  useEffect(() => {
+    setNewName(profile?.name || '');
+  }, [profile?.name]);
+  
+  const handleNameUpdate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if(newName.trim()){
+      updateProfile({ name: newName.trim() });
+      setEditingName(false);
+    }
+  }
+
+  if (!session || !user) {
+    return <Auth />;
+  }
+  
+  if (loading) {
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-xl font-semibold text-text-secondary dark:text-gray-400">{t('auth.loading')}</div>
+        </div>
+    );
+  }
+  
+  if (error) {
+     return (
+        <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-screen">
+            <div className="bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center max-w-lg mx-auto w-full">
+                <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">{error.title}</h2>
+                <div className="text-text-secondary dark:text-gray-300 space-y-4">{error.body}</div>
+                <button 
+                    onClick={() => supabase.auth.signOut()} 
+                    className="mt-6 bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300"
+                >
+                    {t('dashboard.tryAgainButton')}
+                </button>
             </div>
-        );
-    }
-    
-    if (!userProfile) {
-        return (
-             <div className="min-h-screen flex items-center justify-center text-center p-4 bg-background dark:bg-gray-900">
-                <div className="bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-lg">
-                    <h2 className="text-2xl font-bold text-red-600 mb-4">{t('dashboard.syncErrorTitle')}</h2>
-                    <p className="text-text-secondary dark:text-gray-400 mb-4">{t('dashboard.syncErrorBody')}</p>
-                     <button onClick={() => supabase.auth.signOut()} className="mt-6 bg-secondary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-80 transition-colors">
-                        {t('dashboard.tryAgainButton')}
-                    </button>
-                </div>
-            </div>
-        )
-    }
+        </main>
+     );
+  }
 
-    return <Dashboard 
-        profile={userProfile} 
-        weightEntries={weights} 
-        theme={theme} 
-        onThemeToggle={handleThemeToggle} 
-        onProfileUpdate={updateProfile}
-        onAddWeightEntry={addWeightEntry}
-        onDeleteWeightEntry={deleteWeightEntry}
-    />;
+  if (!profile) {
+    // This state can happen if profile fetch fails but isn't an RLS error.
+    // The `error` state should ideally be showing a message.
+    // This is a fallback.
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-xl font-semibold text-red-500">{t('dashboard.profileFetchError')}</div>
+         <button 
+            onClick={() => supabase.auth.signOut()} 
+            className="mt-6 bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300"
+        >
+            {t('dashboard.tryAgainButton')}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <header className="bg-card dark:bg-gray-800 shadow-md">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center gap-4">
+               {editingName ? (
+                <form onSubmit={handleNameUpdate} className="flex items-center gap-2">
+                  <input 
+                    type="text" 
+                    value={newName} 
+                    onChange={(e) => setNewName(e.target.value)} 
+                    className="px-2 py-1 border-b-2 border-primary bg-transparent focus:outline-none dark:text-white"
+                    autoFocus
+                  />
+                  <button type="submit" className="text-green-500 hover:text-green-700">✓</button>
+                  <button type="button" onClick={() => setEditingName(false)} className="text-red-500 hover:text-red-700">×</button>
+                </form>
+               ) : (
+                <>
+                  <h1 className="text-2xl font-bold text-text-primary dark:text-gray-100">{t('header.greeting', { name: profile.name })}</h1>
+                   <button onClick={() => setEditingName(true)} aria-label={t('header.editName')} className="text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-primary">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z" />
+                      </svg>
+                   </button>
+                </>
+               )}
+            </div>
+            <div className="flex items-center gap-4">
+              <LanguageSwitcher/>
+              <DarkModeToggle theme={theme} onToggle={toggleTheme} />
+              <button
+                onClick={() => supabase.auth.signOut()}
+                className="text-sm font-semibold text-text-secondary hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors"
+              >
+                {t('header.logout')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1 space-y-6">
+            <BMICard profile={profile} entries={entries} onProfileUpdate={updateProfile} />
+            <Achievements allAchievements={allAchievements} unlockedIds={unlockedAchievementIds} />
+          </div>
+          <div className="lg:col-span-2 space-y-6">
+            <WeightForm onAddEntry={addWeightEntry} weightUnit={profile.weight_unit || 'kg'} />
+            <div className="bg-card dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('dashboard.weightTrend')}</h2>
+                <WeightChart data={entries} weightUnit={profile.weight_unit || 'kg'} theme={theme}/>
+            </div>
+             <div className="bg-card dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+                 <h2 className="text-xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('dashboard.bmiTrend')}</h2>
+                <BMIChart data={bmiChartData} theme={theme} />
+            </div>
+            <WeightHistory entries={entries} onDeleteEntry={deleteWeightEntry} weightUnit={profile.weight_unit || 'kg'} />
+          </div>
+        </div>
+      </main>
+      <AchievementModal achievement={newAchievement} onClose={() => setNewAchievement(null)} />
+    </>
+  );
 };
 
 export default App;

@@ -26,17 +26,18 @@ const translationEN = {
     "invalidHeightError": "Please enter a valid height.",
     "passwordPlaceholder": "Your password",
     "phonePlaceholder": "Phone number",
+    "invalidPhoneError": "Please select a country and enter a valid phone number.",
+    "searchCountryPlaceholder": "Search country...",
     "phoneVerificationNotice": "You will receive an SMS for verification.",
     "signupButton": "Sign Up",
     "signingUpButton": "Signing up...",
     "switchToLogin": "Already have an account? Log in",
     "loginTitle": "Welcome Back!",
     "loginInstruction": "Log in to your account to continue.",
-    "loginPhonePlaceholder": "Your phone number",
     "loginButton": "Log In",
-    "loggingInButton": "Loading...",
+    "loggingInButton": "Sending code...",
     "switchToSignup": "Don't have an account? Sign up",
-    "otpSuccessMessage": "Registration almost complete! Check your phone for the verification code.",
+    "otpSuccessMessage": "Verification code sent! Check your phone.",
     "profileCreationError": "Verification successful! But we couldn't save your profile: {{message}}. Please try to register again.",
     "forgotPasswordLink": "Forgot your password?",
     "forgotPasswordTitle": "Reset Password",
@@ -172,7 +173,7 @@ const translationEN = {
 };
 
 const translationES = {
-  "auth": {
+ "auth": {
     "loading": "Cargando...",
     "verifyTitle": "Verifica tu Teléfono",
     "verifyInstruction": "Introduce el código de 6 dígitos que te hemos enviado a {{phone}}.",
@@ -192,17 +193,18 @@ const translationES = {
     "invalidHeightError": "Por favor, introduce una altura válida.",
     "passwordPlaceholder": "Tu contraseña",
     "phonePlaceholder": "Número de teléfono",
+    "invalidPhoneError": "Por favor, selecciona un país e introduce un número de teléfono válido.",
+    "searchCountryPlaceholder": "Buscar país...",
     "phoneVerificationNotice": "Recibirás un SMS de verificación.",
     "signupButton": "Registrarse",
     "signingUpButton": "Registrando...",
     "switchToLogin": "¿Ya tienes una cuenta? Inicia sesión",
     "loginTitle": "¡Bienvenido de Vuelta!",
     "loginInstruction": "Ingresa a tu cuenta para continuar.",
-    "loginPhonePlaceholder": "Tu número de teléfono",
     "loginButton": "Iniciar Sesión",
-    "loggingInButton": "Cargando...",
+    "loggingInButton": "Enviando código...",
     "switchToSignup": "¿No tienes cuenta? Regístrate",
-    "otpSuccessMessage": "¡Registro casi completo! Revisa tu teléfono para obtener el código de verificación.",
+    "otpSuccessMessage": "¡Código de verificación enviado! Revisa tu teléfono.",
     "profileCreationError": "¡Verificación exitosa! Pero no pudimos guardar tu perfil: {{message}}. Por favor, intenta registrarte de nuevo.",
     "forgotPasswordLink": "¿Olvidaste tu contraseña?",
     "forgotPasswordTitle": "Restablecer Contraseña",
@@ -340,13 +342,13 @@ const translationES = {
 const translationPT = {
   "auth": {
     "loading": "Carregando...",
-    "verifyTitle": "Verifique seu telefone",
+    "verifyTitle": "Verifique seu Telefone",
     "verifyInstruction": "Digite o código de 6 dígitos que enviamos para {{phone}}.",
-    "verifyButton": "Verificar e continuar",
+    "verifyButton": "Verificar e Entrar",
     "verifyingButton": "Verificando...",
-    "backToSignup": "Voltar para o registro",
-    "signupTitle": "Crie sua conta",
-    "signupInstruction": "Complete seus dados para começar.",
+    "backToSignup": "Voltar ao registo",
+    "signupTitle": "Crie a sua Conta",
+    "signupInstruction": "Complete os seus dados para começar.",
     "namePlaceholder": "Seu nome",
     "dobLabel": "Data de nascimento",
     "heightUnitLabel": "Unidade de Altura",
@@ -358,32 +360,33 @@ const translationPT = {
     "invalidHeightError": "Por favor, insira uma altura válida.",
     "passwordPlaceholder": "Sua senha",
     "phonePlaceholder": "Número de telefone",
-    "phoneVerificationNotice": "Você receberá um SMS para verificação.",
-    "signupButton": "Cadastrar",
-    "signingUpButton": "Cadastrando...",
-    "switchToLogin": "Já tem uma conta? Faça login",
-    "loginTitle": "Bem-vindo de volta!",
-    "loginInstruction": "Faça login em sua conta para continuar.",
-    "loginPhonePlaceholder": "Seu número de telefone",
-    "loginButton": "Entrar",
-    "loggingInButton": "Carregando...",
-    "switchToSignup": "Não tem uma conta? Cadastre-se",
-    "otpSuccessMessage": "Cadastro quase completo! Verifique seu telefone para o código de verificação.",
-    "profileCreationError": "Verificação bem-sucedida! Mas não conseguimos salvar seu perfil: {{message}}. Por favor, tente se registrar novamente.",
-    "forgotPasswordLink": "Esqueceu sua senha?",
+    "invalidPhoneError": "Por favor, selecione um país e insira um número de telefone válido.",
+    "searchCountryPlaceholder": "Procurar país...",
+    "phoneVerificationNotice": "Você receberá um SMS de verificação.",
+    "signupButton": "Registrar",
+    "signingUpButton": "Registrando...",
+    "switchToLogin": "Já tem uma conta? Inicie sessão",
+    "loginTitle": "Bem-vindo de Volta!",
+    "loginInstruction": "Aceda à sua conta para continuar.",
+    "loginButton": "Iniciar Sessão",
+    "loggingInButton": "Enviando código...",
+    "switchToSignup": "Não tem conta? Registre-se",
+    "otpSuccessMessage": "Código de verificação enviado! Verifique seu telefone.",
+    "profileCreationError": "Verificação bem-sucedida! Mas não foi possível guardar o seu perfil: {{message}}. Por favor, tente registrar-se novamente.",
+    "forgotPasswordLink": "Esqueceu a sua senha?",
     "forgotPasswordTitle": "Redefinir Senha",
-    "forgotPasswordInstruction": "Digite seu número de telefone e enviaremos um código para redefinir sua senha.",
-    "sendResetCodeButton": "Enviar Código de Redefinição",
+    "forgotPasswordInstruction": "Insira o seu número de telefone e enviaremos um código para redefinir a sua senha.",
+    "sendResetCodeButton": "Enviar Código",
     "sendingCodeButton": "Enviando...",
-    "updatePasswordTitle": "Atualize Sua Senha",
-    "updatePasswordInstruction": "Enviamos um código para {{phone}}. Digite-o abaixo junto com sua nova senha.",
+    "updatePasswordTitle": "Atualize a Sua Senha",
+    "updatePasswordInstruction": "Enviamos um código para {{phone}}. Insira-o abaixo juntamente com a sua nova senha.",
     "otpPlaceholder": "Código de Verificação",
     "newPasswordPlaceholder": "Nova Senha",
     "updatePasswordButton": "Atualizar Senha",
     "updatingPasswordButton": "Atualizando...",
-    "passwordUpdateSuccess": "Sua senha foi atualizada com sucesso! Agora você pode fazer login com sua nova senha.",
-    "resetCodeSuccessMessage": "Um código de redefinição de senha foi enviado para o seu telefone.",
-    "backToLogin": "Voltar para o Login"
+    "passwordUpdateSuccess": "A sua senha foi atualizada com sucesso! Agora pode iniciar sessão com a sua nova senha.",
+    "resetCodeSuccessMessage": "Foi enviado um código de redefinição de senha para o seu telefone.",
+    "backToLogin": "Voltar ao início de sessão"
   },
   "header": {
     "greeting": "Olá, {{name}}",
@@ -393,15 +396,15 @@ const translationPT = {
   "dashboard": {
     "weightTrend": "Tendência de Peso",
     "bmiTrend": "Tendência de IMC",
-    "profileFetchError": "Não foi possível carregar seu perfil. Verifique as informações abaixo para resolver o problema.",
-    "weightsFetchError": "Não foi possível carregar seus registros de peso. Verifique as informações abaixo para resolver o problema.",
-    "syncErrorTitle": "Erro de sincronização",
-    "syncErrorBody": "Detectamos uma sessão ativa, mas não conseguimos encontrar seu perfil. Isso pode ser um erro temporário.",
-    "dataErrorTitle": "Erro ao carregar dados",
-    "rlsErrorTitle": "Causa e solução possíveis",
-    "rlsErrorBody": "Este erro quase sempre ocorre porque as tabelas <1>profiles</1> e <1>weights</1> não têm as políticas de Segurança em Nível de Linha (RLS) corretas. Sem elas, seu aplicativo não tem permissão para ler os dados.",
-    "rlsErrorSolution": "<1>Solução:</1> Vá para o <3>Editor SQL</3> no seu painel do Supabase e execute o script de configuração RLS para criar as políticas necessárias.",
-    "tryAgainButton": "Sair e tentar novamente"
+    "profileFetchError": "Não foi possível carregar o seu perfil. Verifique as informações abaixo para resolver o problema.",
+    "weightsFetchError": "Não foi possível carregar os seus registos de peso. Verifique as informações abaixo para resolver o problema.",
+    "syncErrorTitle": "Erro de Sincronização",
+    "syncErrorBody": "Detectamos uma sessão ativa, mas não conseguimos encontrar o seu perfil. Isto pode ser um erro temporário.",
+    "dataErrorTitle": "Erro ao Carregar Dados",
+    "rlsErrorTitle": "Causa e Solução Possíveis",
+    "rlsErrorBody": "Este erro ocorre quase sempre porque as tabelas <1>profiles</1> e <1>weights</1> não têm as políticas de segurança (RLS) corretas. Sem elas, a sua aplicação não tem permissão para ler os dados.",
+    "rlsErrorSolution": "<1>Solução:</1> Vá ao <3>Editor de SQL</3> no seu painel do Supabase e execute o script de configuração de RLS para criar as políticas necessárias.",
+    "tryAgainButton": "Sair e Tentar Novamente"
   },
   "bmiCard": {
     "title": "Seu Status",
@@ -423,12 +426,12 @@ const translationPT = {
       "finalGoal": "Meta Final",
       "set": "Definir",
       "edit": "Editar",
-      "allGoalsReached": "Todos os objetivos alcançados! Parabéns! 🥳",
-      "toGo": "para alcançar seu próximo objetivo"
+      "allGoalsReached": "Todos os objetivos cumpridos! Parabéns! 🥳",
+      "toGo": "para alcançar o seu próximo objetivo"
     },
     "goalProgress": {
-      "title": "Progresso da Meta",
-      "progressComplete": "{{percentage}}% Completo",
+      "title": "Progresso Para a Meta",
+      "progressComplete": "{{percentage}}% Concluído",
       "startLabel": "Início",
       "goalLabel": "Meta"
     },
@@ -439,10 +442,10 @@ const translationPT = {
       "thirtyDays": "Últimos 30 dias",
       "oneYear": "Último ano",
       "weightChange": "Mudança de Peso",
-      "bmiChange": "Mudança de IMC (%)"
+      "bmiChange": "Mudança IMC (%)"
     },
     "units": {
-      "title": "Preferências de Unidade",
+      "title": "Preferências de Unidades",
       "weight": "Peso",
       "height": "Altura",
       "kg": "kg",
@@ -453,24 +456,24 @@ const translationPT = {
     }
   },
   "weightForm": {
-    "title": "Adicionar Registro de Peso",
+    "title": "Adicionar Registo de Peso",
     "dateLabel": "Data",
     "weightLabel": "Peso ({{unit}})",
     "weightPlaceholder": "ex: 75.5",
-    "saveButton": "Salvar Peso",
+    "saveButton": "Guardar Peso",
     "validationError": "Por favor, insira um peso válido e selecione uma data."
   },
   "history": {
     "title": "Histórico de Peso",
-    "noEntries": "Ainda não há registros de peso. Adicione um para começar!",
+    "noEntries": "Ainda não há registos de peso. Adicione um para começar!",
     "dateHeader": "Data",
     "weightHeader": "Peso ({{unit}})",
     "actionsHeader": "Ações",
-    "deleteLabel": "Excluir registro"
+    "deleteLabel": "Eliminar registo"
   },
   "charts": {
-    "noDataWeight": "Insira pelo menos dois registros de peso para ver seu gráfico de progresso.",
-    "noDataBmi": "Insira pelo menos dois registros de peso para ver seu gráfico de tendência de IMC.",
+    "noDataWeight": "Insira pelo menos dois registos de peso para ver o seu gráfico de progresso.",
+    "noDataBmi": "Insira pelo menos dois registos de peso para ver o seu gráfico de tendência de IMC.",
     "weightLabel": "Peso",
     "bmiLabel": "IMC",
     "yAxisLabelWeight": "Peso ({{unit}})",
@@ -479,29 +482,30 @@ const translationPT = {
   "achievements": {
     "title": "Conquistas",
     "modalTitle": "Nova Conquista Desbloqueada!",
-    "modalClose": "Incrível!",
+    "modalClose": "Fantástico!",
     "firstStep": {
       "title": "Primeiro Passo",
-      "description": "Você registrou seu primeiro peso. A jornada começa!"
+      "description": "Registou o seu primeiro peso. A jornada começa!"
     },
     "fivePercent": {
-      "title": "Progredindo",
-      "description": "Você perdeu 5% do seu peso corporal inicial. Continue assim!"
+      "title": "A Progredir",
+      "description": "Perdeu 5% do seu peso corporal inicial. Continue assim!"
     },
     "tenPercent": {
-      "title": "Embalado!",
-      "description": "Você perdeu 10% do seu peso corporal inicial. Incrível!"
+      "title": "Em Grande!",
+      "description": "Perdeu 10% do seu peso corporal inicial. Incrível!"
     },
     "bmiImproved": {
       "title": "Mais Saudável",
-      "description": "Você melhorou sua categoria de IMC. Um marco importante!"
+      "description": "Melhorou a sua categoria de IMC. Um marco importante!"
     },
     "goalReached": {
-      "title": "Meta Batida!",
-      "description": "Você atingiu sua meta final de peso. Parabéns!"
+      "title": "Meta Cumprida!",
+      "description": "Atingiu a sua meta final de peso. Parabéns!"
     }
   }
 };
+
 
 export const supportedLngs = {
   en: { name: 'English', flag: '🇬🇧' },
