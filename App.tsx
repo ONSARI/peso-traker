@@ -555,43 +555,29 @@ const App: React.FC = () => {
   const fetchData = useCallback(async (currentUser: User) => {
     setErrorDetails(null);
     setLoading(true);
-    setSchemaNeedsFix(false);
 
-    // Attempt 1: Fetch profile with all columns
-    const { data: fullProfileData, error: fullProfileError } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
-      .select('id, name, height, dob, weight_unit, height_unit, goal_weight_1, goal_weight_2, goal_weight_final')
+      .select('*')
       .eq('id', currentUser.id)
       .single();
 
-    if (fullProfileError) {
-        const isSchemaError = fullProfileError.message.includes("column") && (fullProfileError.message.includes("does not exist") || fullProfileError.message.includes("Could not find"));
-
-        if (isSchemaError) {
-            console.warn('Schema error detected. Falling back to basic profile fetch.');
-            setSchemaNeedsFix(true);
-
-            // Attempt 2: Fetch only basic profile data
-            const { data: basicProfileData, error: basicProfileError } = await supabase
-              .from('profiles')
-              .select('id, name, height, dob, weight_unit, height_unit')
-              .eq('id', currentUser.id)
-              .single();
-            
-            if (basicProfileError) {
-                // If even the basic query fails, it's a more serious issue like RLS.
-                handleDatabaseError(basicProfileError);
-                setProfile(null);
-            } else {
-                 setProfile(basicProfileData);
-            }
-        } else {
-            // It's a different, critical error (like RLS)
-            handleDatabaseError(fullProfileError);
-            setProfile(null);
-        }
-    } else {
-      setProfile(fullProfileData);
+    if (profileError) {
+      if (!handleDatabaseError(profileError)) {
+        // A non-RLS, non-schema error occurred, show a generic message
+        setAppError(t('dashboard.profileFetchError'));
+      }
+      setProfile(null);
+    } else if (profileData) {
+      // Check if the goal columns exist on the fetched object.
+      // The property will be undefined if the column doesn't exist in the table.
+      if (profileData.goal_weight_final === undefined) {
+        console.warn('Schema needs fix: goal_weight_final property is missing from profile data.');
+        setSchemaNeedsFix(true);
+      } else {
+        setSchemaNeedsFix(false);
+      }
+      setProfile(profileData as UserProfile);
     }
     
     const { data: weightsData, error: weightsError } = await supabase
@@ -631,16 +617,12 @@ const App: React.FC = () => {
     if (!user || !profile) return false;
     setAppError(null);
     setErrorDetails(null);
-    
-    const selectString = schemaNeedsFix
-      ? 'id, name, height, dob, weight_unit, height_unit'
-      : 'id, name, height, dob, weight_unit, height_unit, goal_weight_1, goal_weight_2, goal_weight_final';
 
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)
       .eq('id', user.id)
-      .select(selectString)
+      .select('*')
       .single();
 
     if (error) {
@@ -654,14 +636,14 @@ const App: React.FC = () => {
       }
       return false;
     } else if (data) {
-      setProfile(data);
+      setProfile(data as UserProfile);
        if (data.goal_weight_final !== undefined) {
            setSchemaNeedsFix(false);
        }
       return true;
     }
     return false;
-  }, [user, profile, t, handleDatabaseError, schemaNeedsFix]);
+  }, [user, profile, t, handleDatabaseError]);
 
   const addWeightEntry = useCallback(async (weightInKg: number, date: string) => {
     if (!user) return;
