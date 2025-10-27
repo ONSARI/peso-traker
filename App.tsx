@@ -505,15 +505,18 @@ const Header: React.FC<{ name: string; onNameChange: (name: string) => void; onS
     );
 };
 
-const Dashboard: React.FC<{ userProfile: UserProfile, authUser: User, initialWeights: WeightEntry[], theme: 'light' | 'dark', onThemeToggle: () => void }> = ({ userProfile, authUser, initialWeights, theme, onThemeToggle }) => {
+interface DashboardProps {
+    profile: UserProfile;
+    weightEntries: WeightEntry[];
+    theme: 'light' | 'dark';
+    onThemeToggle: () => void;
+    onProfileUpdate: (updates: Partial<UserProfile>) => void;
+    onAddWeightEntry: (weight: number, date: string) => void;
+    onDeleteWeightEntry: (id: number) => void;
+}
+
+const Dashboard: React.FC<DashboardProps> = ({ profile, weightEntries, theme, onThemeToggle, onProfileUpdate, onAddWeightEntry, onDeleteWeightEntry }) => {
     const { t } = useTranslation();
-    const [profile, setProfile] = useState<UserProfile>({
-        ...userProfile,
-        weight_unit: authUser.user_metadata.weight_unit || 'kg',
-        height_unit: authUser.user_metadata.height_unit || 'cm',
-        goal_weight: authUser.user_metadata.goal_weight || null,
-    });
-    const [weightEntries, setWeightEntries] = useState<WeightEntry[]>(initialWeights);
     const [activeChart, setActiveChart] = useState<'weight' | 'bmi'>('weight');
 
     const sortedEntries = useMemo(() => {
@@ -590,19 +593,16 @@ const Dashboard: React.FC<{ userProfile: UserProfile, authUser: User, initialWei
     const [seenAchievements, setSeenAchievements] = useLocalStorage<string[]>('seenAchievements', []);
 
     useEffect(() => {
-        // FIX: Use spread syntax `[...]` to convert Set to Array to ensure correct type inference.
         const unseenUnlocked = [...unlockedAchievementIds].filter(id => !seenAchievements.includes(id));
         if (unseenUnlocked.length > 0) {
             const achievementToCelebrate = ALL_ACHIEVEMENTS.find(ach => ach.id === unseenUnlocked[0]);
             if(achievementToCelebrate) {
                 setNewlyUnlocked({ ...achievementToCelebrate, Icon: ICONS_MAP[achievementToCelebrate.id] });
-                // FIX: The `unseenUnlocked` variable is now correctly typed as `string[]`, resolving the assignment error.
                 setSeenAchievements(prev => [...prev, ...unseenUnlocked]);
             }
         }
-    }, [unlockedAchievementIds, seenAchievements, setSeenAchievements, ALL_ACHIEVEMENTS]);
-    // --- End Achievements ---
-
+    }, [unlockedAchievementIds, seenAchievements, setSeenAchievements, ALL_ACHIEVEMENTS, ICONS_MAP]);
+    
     const bmiData = useMemo(() => {
         if (!profile.height || profile.height <= 0) return [];
         const heightInMeters = profile.height / 100;
@@ -612,83 +612,13 @@ const Dashboard: React.FC<{ userProfile: UserProfile, authUser: User, initialWei
         }));
     }, [sortedEntries, profile.height]);
 
-    const updateProfile = async (updates: Partial<UserProfile>) => {
-        const oldProfile = profile;
-        const newProfile = { ...profile, ...updates };
-        setProfile(newProfile); // Optimistic UI update
-
-        const profileTableUpdates: { [key: string]: any } = {};
-        const userMetadataUpdates: { [key: string]: any } = {};
-        const validProfileKeys: (keyof UserProfile)[] = ['name', 'height', 'dob'];
-
-        // Separate updates for 'profiles' table and 'user_metadata'
-        Object.keys(updates).forEach(key => {
-            const typedKey = key as keyof UserProfile;
-            if (typedKey === 'weight_unit' || typedKey === 'height_unit' || typedKey === 'goal_weight') {
-                userMetadataUpdates[typedKey] = updates[typedKey];
-            } else if (validProfileKeys.includes(typedKey)) {
-                profileTableUpdates[typedKey] = updates[typedKey];
-            }
-        });
-
-        let hasError = false;
-
-        // Update the 'profiles' table if there are relevant changes
-        if (Object.keys(profileTableUpdates).length > 0) {
-            const { error } = await supabase.from('profiles').update(profileTableUpdates).eq('id', userProfile.id);
-            if (error) {
-                console.error("Error updating profile:", error.message);
-                hasError = true;
-            }
-        }
-
-        // Update user_metadata in auth.users
-        if (Object.keys(userMetadataUpdates).length > 0) {
-            const { error } = await supabase.auth.updateUser({ data: userMetadataUpdates });
-            if (error) {
-                console.error("Error updating user metadata:", error.message);
-                hasError = true;
-            }
-        }
-
-        if (hasError) {
-            setProfile(oldProfile); // Revert on any error
-        }
-    }
-    
-    const addWeightEntry = useCallback(async (weight: number, date: string) => {
-        const existingEntry = weightEntries.find(entry => entry.date === date);
-
-        if (existingEntry) {
-            // Update existing entry for the selected date
-            const { data, error } = await supabase.from('weights').update({ weight }).eq('id', existingEntry.id).select();
-            if (error) return console.error(error.message);
-            if (data) {
-                setWeightEntries(entries => entries.map(e => e.id === existingEntry.id ? data[0] : e));
-            }
-        } else {
-            // Insert new entry for the selected date
-            const { data, error } = await supabase.from('weights').insert({ date: date, weight: weight, user_id: userProfile.id }).select();
-            if (error) return console.error(error.message);
-            if(data) {
-                setWeightEntries(prevEntries => [...prevEntries, data[0]]);
-            }
-        }
-    }, [weightEntries, userProfile.id]);
-
-    const deleteWeightEntry = useCallback(async (id: number) => {
-        setWeightEntries(prevEntries => prevEntries.filter(entry => entry.id !== id));
-        const { error } = await supabase.from('weights').delete().eq('id', id);
-        if (error) console.error("Error deleting weight:", error.message);
-    }, []);
-
     const weightUnit = profile.weight_unit || 'kg';
 
     return (
          <>
             <Header 
                 name={profile.name} 
-                onNameChange={(name) => updateProfile({ name })} 
+                onNameChange={(name) => onProfileUpdate({ name })} 
                 onSignOut={() => supabase.auth.signOut()}
                 theme={theme}
                 onThemeToggle={onThemeToggle}
@@ -697,8 +627,8 @@ const Dashboard: React.FC<{ userProfile: UserProfile, authUser: User, initialWei
             <main className="container mx-auto p-4 sm:p-6 lg:p-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                     <div className="lg:col-span-1 flex flex-col gap-6 lg:gap-8">
-                        <BMICard profile={profile} entries={sortedEntries} onProfileUpdate={updateProfile} />
-                        <WeightForm onAddEntry={addWeightEntry} weightUnit={weightUnit}/>
+                        <BMICard profile={profile} entries={sortedEntries} onProfileUpdate={onProfileUpdate} />
+                        <WeightForm onAddEntry={onAddWeightEntry} weightUnit={weightUnit}/>
                          <Achievements 
                             allAchievements={ALL_ACHIEVEMENTS.map(a => ({...a, Icon: ICONS_MAP[a.id]}))}
                             unlockedIds={unlockedAchievementIds} 
@@ -728,7 +658,7 @@ const Dashboard: React.FC<{ userProfile: UserProfile, authUser: User, initialWei
                        </div>
                     </div>
                     <div className="lg:col-span-3">
-                        <WeightHistory entries={sortedEntries} onDeleteEntry={deleteWeightEntry} weightUnit={weightUnit} />
+                        <WeightHistory entries={sortedEntries} onDeleteEntry={onDeleteWeightEntry} weightUnit={weightUnit} />
                     </div>
                 </div>
             </main>
@@ -761,65 +691,144 @@ const App: React.FC = () => {
         document.documentElement.dir = i18n.dir(i18n.language);
     }, [i18n, i18n.language]);
 
+    const fetchData = useCallback(async (currentSession: Session) => {
+        setLoading(true);
+        setFetchError(null);
+
+        const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentSession.user.id)
+            .single();
+
+        if (profileError) {
+            console.error(`Error fetching profile:`, profileError.message);
+            setFetchError(t('dashboard.profileFetchError'));
+            setLoading(false);
+            return;
+        }
+
+        const fullProfile: UserProfile = {
+            ...profileData,
+            weight_unit: currentSession.user.user_metadata.weight_unit || 'kg',
+            height_unit: currentSession.user.user_metadata.height_unit || 'cm',
+            goal_weight: currentSession.user.user_metadata.goal_weight || null,
+        };
+        setUserProfile(fullProfile);
+
+        const { data: weightsData, error: weightsError } = await supabase
+            .from('weights')
+            .select('*')
+            .eq('user_id', currentSession.user.id);
+        
+        if (weightsError) {
+            console.error('Error fetching weights:', weightsError.message);
+            setFetchError(t('dashboard.weightsFetchError'));
+        } else {
+            setWeights(weightsData || []);
+        }
+        
+        setLoading(false);
+    }, [t]);
+
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
+            if (session) {
+                fetchData(session);
+            } else {
+                setLoading(false);
+            }
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setSession(session);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+            setSession(newSession);
+            if (newSession) {
+                fetchData(newSession);
+            } else {
+                setUserProfile(null);
+                setWeights([]);
+                setFetchError(null);
+                setLoading(false);
+            }
         });
 
         return () => {
             subscription?.unsubscribe();
         };
-    }, []);
+    }, [fetchData]);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!session) {
-                setUserProfile(null);
-                setWeights([]);
-                setFetchError(null);
-                setLoading(false); 
-                return;
+    const updateProfile = async (updates: Partial<UserProfile>) => {
+        if (!userProfile) return;
+
+        const oldProfile = { ...userProfile };
+        const newProfile = { ...userProfile, ...updates };
+        setUserProfile(newProfile); // Optimistic UI update
+
+        const profileTableUpdates: { [key: string]: any } = {};
+        const userMetadataUpdates: { [key: string]: any } = {};
+        const validProfileKeys: (keyof UserProfile)[] = ['name', 'height', 'dob'];
+
+        Object.keys(updates).forEach(key => {
+            const typedKey = key as keyof UserProfile;
+            if (typedKey === 'weight_unit' || typedKey === 'height_unit' || typedKey === 'goal_weight') {
+                userMetadataUpdates[typedKey] = updates[typedKey];
+            } else if (validProfileKeys.includes(typedKey)) {
+                profileTableUpdates[typedKey] = updates[typedKey];
             }
+        });
 
-            setLoading(true);
-            setFetchError(null);
-            
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-            
+        let hasError = false;
+
+        if (Object.keys(profileTableUpdates).length > 0) {
+            const { error } = await supabase.from('profiles').update(profileTableUpdates).eq('id', userProfile.id);
             if (error) {
-                console.error(`Error fetching profile:`, error.message);
-                setFetchError(t('dashboard.profileFetchError'));
-                setLoading(false);
-                return;
+                console.error("Error updating profile:", error.message);
+                hasError = true;
             }
+        }
 
-            setUserProfile(data);
-
-            const { data: weightsData, error: weightsError } = await supabase
-                .from('weights')
-                .select('*')
-                .eq('user_id', session.user.id);
-            
-            if (weightsError) {
-                console.error('Error fetching weights:', weightsError.message);
-                setFetchError(t('dashboard.weightsFetchError'));
-            } else {
-                setWeights(weightsData || []);
+        if (Object.keys(userMetadataUpdates).length > 0) {
+            const { error } = await supabase.auth.updateUser({ data: userMetadataUpdates });
+            if (error) {
+                console.error("Error updating user metadata:", error.message);
+                hasError = true;
             }
-            
-            setLoading(false);
-        };
+        }
 
-        fetchData();
-    }, [session, t]);
+        if (hasError) {
+            setUserProfile(oldProfile); // Revert on any error
+        }
+    };
+
+    const addWeightEntry = useCallback(async (weight: number, date: string) => {
+        if (!userProfile) return;
+        const existingEntry = weights.find(entry => entry.date === date);
+
+        if (existingEntry) {
+            const { data, error } = await supabase.from('weights').update({ weight }).eq('id', existingEntry.id).select().single();
+            if (error) return console.error(error.message);
+            if (data) {
+                setWeights(entries => entries.map(e => e.id === existingEntry.id ? data : e));
+            }
+        } else {
+            const { data, error } = await supabase.from('weights').insert({ date: date, weight: weight, user_id: userProfile.id }).select().single();
+            if (error) return console.error(error.message);
+            if(data) {
+                setWeights(prevEntries => [...prevEntries, data]);
+            }
+        }
+    }, [weights, userProfile]);
+
+    const deleteWeightEntry = useCallback(async (id: number) => {
+        const oldWeights = [...weights];
+        setWeights(prevEntries => prevEntries.filter(entry => entry.id !== id));
+        const { error } = await supabase.from('weights').delete().eq('id', id);
+        if (error) {
+            console.error("Error deleting weight:", error.message);
+            setWeights(oldWeights); // Revert on error
+        }
+    }, [weights]);
     
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center bg-background dark:bg-gray-900 text-text-secondary dark:text-gray-400">{t('auth.loading')}</div>;
@@ -871,11 +880,13 @@ const App: React.FC = () => {
     }
 
     return <Dashboard 
-        userProfile={userProfile} 
-        authUser={session.user} 
-        initialWeights={weights} 
+        profile={userProfile} 
+        weightEntries={weights} 
         theme={theme} 
         onThemeToggle={handleThemeToggle} 
+        onProfileUpdate={updateProfile}
+        onAddWeightEntry={addWeightEntry}
+        onDeleteWeightEntry={deleteWeightEntry}
     />;
 };
 
