@@ -194,19 +194,20 @@ const Auth: React.FC = () => {
         if (error) {
             setError(error.message);
         } else if (data.session && pendingAuthData.flow === 'signup' && pendingAuthData.profileData) {
-            // User signed up, now create their profile
+            // A trigger in Supabase (`handle_new_user`) creates a profile row automatically.
+            // Here, we just UPDATE it with the details from the form.
             const { error: profileError } = await supabase
                 .from('profiles')
-                .insert({ id: data.session.user.id, ...pendingAuthData.profileData });
+                .update(pendingAuthData.profileData)
+                .eq('id', data.session.user.id);
 
             if (profileError) {
                 setError(t('auth.profileCreationError', { message: profileError.message }));
-                // Note: user is logged in but profile failed. App needs to handle this state.
-                // For now, we'll show an error and they can try signing up again.
+                // If profile update fails, sign out to prevent inconsistent state
                 await supabase.auth.signOut();
             }
         }
-        // on success, the onAuthStateChange listener in App will handle the redirect.
+        // on success, the onAuthStateChange listener in App will handle the state change.
         setLoading(false);
     };
     
@@ -812,15 +813,18 @@ const App: React.FC = () => {
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl font-semibold text-red-500">{t('dashboard.profileFetchError')}</div>
-         <button 
-            onClick={() => supabase.auth.signOut()} 
-            className="mt-6 bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300"
-        >
-            {t('dashboard.tryAgainButton')}
-        </button>
-      </div>
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-screen">
+        <div className="bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-lg mx-auto w-full text-center">
+          <h2 className="text-2xl font-bold text-red-500 mb-4">{t('dashboard.profileFetchError')}</h2>
+          <p className="text-text-secondary dark:text-gray-300">{t('dashboard.syncErrorBody')}</p>
+          <button 
+              onClick={() => supabase.auth.signOut()} 
+              className="mt-6 bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300"
+          >
+              {t('dashboard.tryAgainButton')}
+          </button>
+        </div>
+      </main>
     );
   }
 
