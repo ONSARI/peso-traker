@@ -70,7 +70,10 @@ const translationEN = {
     "rlsErrorTitle": "Possible Cause and Solution",
     "rlsErrorBody": "This error almost always occurs because the <1>profiles</1> and <1>weights</1> tables do not have the correct Row Level Security (RLS) policies. Without them, your application does not have permission to read the data.",
     "rlsErrorSolution": "<1>Solution:</1> Go to the <3>SQL Editor</3> in your Supabase dashboard and run the RLS setup script to create the necessary policies.",
-    "tryAgainButton": "Log Out and Try Again"
+    "tryAgainButton": "Log Out and Try Again",
+    "profileUpdateError": "Could not save your profile changes. Please check your database permissions (RLS) and try again.",
+    "weightAddError": "Could not add your weight entry. Please try again.",
+    "weightDeleteError": "Could not delete the weight entry. Please try again."
   },
   "bmiCard": {
     "title": "Your Status",
@@ -237,7 +240,10 @@ const translationES = {
     "rlsErrorTitle": "Posible Causa y Solución",
     "rlsErrorBody": "Este error casi siempre ocurre porque las tablas <1>profiles</1> y <1>weights</1> no tienen las políticas de seguridad (RLS) correctas. Sin ellas, tu aplicación no tiene permiso para leer los datos.",
     "rlsErrorSolution": "<1>Solución:</1> Ve al <3>SQL Editor</3> en tu panel de Supabase y ejecuta el script de configuración de RLS para crear las políticas necesarias.",
-    "tryAgainButton": "Cerrar Sesión e Intentar de Nuevo"
+    "tryAgainButton": "Cerrar Sesión e Intentar de Nuevo",
+    "profileUpdateError": "No se pudieron guardar los cambios de tu perfil. Revisa los permisos de tu base de datos (RLS) e inténtalo de nuevo.",
+    "weightAddError": "No se pudo añadir tu registro de peso. Por favor, inténtalo de nuevo.",
+    "weightDeleteError": "No se pudo eliminar el registro de peso. Por favor, inténtalo de nuevo."
   },
   "bmiCard": {
     "title": "Tu Estado",
@@ -404,7 +410,10 @@ const translationPT = {
     "rlsErrorTitle": "Causa e Solução Possíveis",
     "rlsErrorBody": "Este erro ocorre quase sempre porque as tabelas <1>profiles</1> e <1>weights</1> não têm as políticas de segurança (RLS) corretas. Sem elas, a sua aplicação não tem permissão para ler os dados.",
     "rlsErrorSolution": "<1>Solução:</1> Vá ao <3>Editor de SQL</3> no seu painel do Supabase e execute o script de configuração de RLS para criar as políticas necessárias.",
-    "tryAgainButton": "Sair e Tentar Novamente"
+    "tryAgainButton": "Sair e Tentar Novamente",
+    "profileUpdateError": "Não foi possível guardar as alterações do seu perfil. Verifique as permissões da sua base de dados (RLS) e tente novamente.",
+    "weightAddError": "Não foi possível adicionar o seu registo de peso. Por favor, tente novamente.",
+    "weightDeleteError": "Não foi possível eliminar o registo de peso. Por favor, tente novamente."
   },
   "bmiCard": {
     "title": "Seu Status",

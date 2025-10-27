@@ -375,7 +375,8 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [entries, setEntries] = useState<WeightEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<{title: string, body: React.ReactNode} | null>(null);
+  const [appError, setAppError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<{title: string, body: React.ReactNode} | null>(null);
   const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
   const [unlockedAchievements, setUnlockedAchievements] = useLocalStorage<string[]>('unlocked_achievements', []);
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light');
@@ -392,7 +393,7 @@ const App: React.FC = () => {
   ], []);
 
   const fetchData = useCallback(async (currentUser: User) => {
-    setError(null);
+    setErrorDetails(null);
     setLoading(true);
     
     const { data: profileData, error: profileError } = await supabase
@@ -404,7 +405,7 @@ const App: React.FC = () => {
     if (profileError || !profileData) {
       console.error('Error fetching profile:', profileError);
       if (profileError && profileError.message.includes("security policies")) {
-         setError({
+         setErrorDetails({
             title: t('dashboard.dataErrorTitle'),
             body: (
                 <>
@@ -415,7 +416,7 @@ const App: React.FC = () => {
             )
         });
       } else {
-        setError({ title: t('dashboard.syncErrorTitle'), body: <p>{t('dashboard.syncErrorBody')}</p> });
+        setErrorDetails({ title: t('dashboard.syncErrorTitle'), body: <p>{t('dashboard.syncErrorBody')}</p> });
       }
       setProfile(null);
     } else {
@@ -457,6 +458,8 @@ const App: React.FC = () => {
 
   const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
     if (!user || !profile) return;
+    setAppError(null);
+    
     const { data, error } = await supabase
       .from('profiles')
       .update(updates)
@@ -466,13 +469,15 @@ const App: React.FC = () => {
 
     if (error) {
       console.error('Error updating profile:', error);
+      setAppError(t('dashboard.profileUpdateError'));
     } else if (data) {
       setProfile(data);
     }
-  }, [user, profile]);
+  }, [user, profile, t]);
 
   const addWeightEntry = useCallback(async (weightInKg: number, date: string) => {
     if (!user) return;
+    setAppError(null);
     const { data, error } = await supabase
       .from('weights')
       .insert([{ weight: weightInKg, date, user_id: user.id }])
@@ -481,19 +486,22 @@ const App: React.FC = () => {
     
     if (error) {
       console.error('Error adding weight entry:', error);
+      setAppError(t('dashboard.weightAddError'));
     } else if (data) {
       setEntries(prev => [...prev, data].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
     }
-  }, [user]);
+  }, [user, t]);
 
   const deleteWeightEntry = useCallback(async (id: number) => {
+    setAppError(null);
     const { error } = await supabase.from('weights').delete().eq('id', id);
     if (error) {
       console.error('Error deleting weight entry:', error);
+      setAppError(t('dashboard.weightDeleteError'));
     } else {
       setEntries(prev => prev.filter(entry => entry.id !== id));
     }
-  }, []);
+  }, [t]);
 
   const checkAchievements = useCallback(() => {
     if (entries.length === 0 || !profile) return;
@@ -607,12 +615,12 @@ const App: React.FC = () => {
     );
   }
   
-  if (error) {
+  if (errorDetails) {
      return (
         <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-screen">
             <div className="bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center max-w-lg mx-auto w-full">
-                <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">{error.title}</h2>
-                <div className="text-text-secondary dark:text-gray-300 space-y-4">{error.body}</div>
+                <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">{errorDetails.title}</h2>
+                <div className="text-text-secondary dark:text-gray-300 space-y-4">{errorDetails.body}</div>
                 <button 
                     onClick={() => supabase.auth.signOut()} 
                     className="mt-6 bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300"
@@ -626,7 +634,7 @@ const App: React.FC = () => {
 
   if (!profile) {
     // This state can happen if profile fetch fails but isn't an RLS error.
-    // The `error` state should ideally be showing a message.
+    // The `errorDetails` state should ideally be showing a message.
     // This is a fallback.
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -643,7 +651,7 @@ const App: React.FC = () => {
 
   return (
     <>
-      <header className="bg-card dark:bg-gray-800 shadow-md">
+      <header className="bg-card dark:bg-gray-800 shadow-md relative">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center gap-4">
@@ -683,6 +691,14 @@ const App: React.FC = () => {
           </div>
         </div>
       </header>
+       {appError && (
+            <div className="fixed top-20 start-1/2 -translate-x-1/2 z-50 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-lg flex items-center dark:bg-red-900/80 dark:text-red-200 dark:border-red-600">
+                <p>{appError}</p>
+                <button onClick={() => setAppError(null)} className="ml-4 text-red-500 hover:text-red-700 dark:text-red-300 dark:hover:text-red-100">
+                   &times;
+                </button>
+            </div>
+        )}
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 space-y-6">
