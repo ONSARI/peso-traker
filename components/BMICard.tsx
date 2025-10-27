@@ -293,10 +293,10 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
         </div>
     );
     
-    const goals: { key: keyof UserProfile; value: number | null | undefined; label: string; prereq: number | null | undefined }[] = [
-        { key: 'goal_weight_1', value: goal_weight_1, label: t('bmiCard.goals.goal1'), prereq: 1 }, // No prereq
-        { key: 'goal_weight_2', value: goal_weight_2, label: t('bmiCard.goals.goal2'), prereq: goal_weight_1 },
-        { key: 'goal_weight_final', value: goal_weight_final, label: t('bmiCard.goals.finalGoal'), prereq: goal_weight_2 },
+    const goals: { key: keyof UserProfile; value: number | null | undefined; label: string; }[] = [
+        { key: 'goal_weight_1', value: goal_weight_1, label: t('bmiCard.goals.goal1') },
+        { key: 'goal_weight_2', value: goal_weight_2, label: t('bmiCard.goals.goal2') },
+        { key: 'goal_weight_final', value: goal_weight_final, label: t('bmiCard.goals.finalGoal') },
     ];
 
 
@@ -370,7 +370,6 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
                         const isAchieved = latestWeight && goal.value && ((startWeight || 0) > goal.value ? latestWeight <= goal.value : latestWeight >= goal.value);
                         const isActive = activeGoalInfo?.key === goal.key;
                         const isEditingThis = editingGoalKey === goal.key;
-                        const canEdit = !!goal.prereq;
 
                         return (
                             <React.Fragment key={goal.key}>
@@ -394,7 +393,7 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
                                                 {goal.value ? (
                                                     <span className="text-lg font-bold text-text-primary dark:text-gray-200">{displayWeight(goal.value)}</span>
                                                 ) : null}
-                                                <button onClick={() => handleEditGoal(goal.key, goal.value)} disabled={!canEdit} className="text-text-secondary dark:text-gray-400 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed">
+                                                <button onClick={() => handleEditGoal(goal.key, goal.value)} className="text-text-secondary dark:text-gray-400 hover:text-primary">
                                                     {goal.value ? t('bmiCard.goals.edit') : t('bmiCard.goals.set')}
                                                 </button>
                                             </div>
