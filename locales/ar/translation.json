@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "جار التحميل...",
@@ -31,7 +30,21 @@
     "loggingInButton": "جار التحميل...",
     "switchToSignup": "ليس لديك حساب؟ سجل الآن",
     "otpSuccessMessage": "التسجيل على وشك الانتهاء! تحقق من هاتفك للحصول على رمز التحقق.",
-    "profileCreationError": "نجح التحقق! لكن لم نتمكن من حفظ ملفك الشخصي: {{message}}. يرجى محاولة التسجيل مرة أخرى."
+    "profileCreationError": "نجح التحقق! لكن لم نتمكن من حفظ ملفك الشخصي: {{message}}. يرجى محاولة التسجيل مرة أخرى.",
+    "forgotPasswordLink": "هل نسيت كلمة المرور؟",
+    "forgotPasswordTitle": "إعادة تعيين كلمة المرور",
+    "forgotPasswordInstruction": "أدخل رقم هاتفك وسنرسل لك رمزًا لإعادة تعيين كلمة المرور.",
+    "sendResetCodeButton": "إرسال رمز إعادة التعيين",
+    "sendingCodeButton": "جار الإرسال...",
+    "updatePasswordTitle": "تحديث كلمة المرور",
+    "updatePasswordInstruction": "لقد أرسلنا رمزًا إلى {{phone}}. أدخله أدناه مع كلمة المرور الجديدة.",
+    "otpPlaceholder": "رمز التحقق",
+    "newPasswordPlaceholder": "كلمة المرور الجديدة",
+    "updatePasswordButton": "تحديث كلمة المرور",
+    "updatingPasswordButton": "جاري التحديث...",
+    "passwordUpdateSuccess": "تم تحديث كلمة المرور بنجاح! يمكنك الآن تسجيل الدخول بكلمة المرور الجديدة.",
+    "resetCodeSuccessMessage": "تم إرسال رمز إعادة تعيين كلمة المرور إلى هاتفك.",
+    "backToLogin": "العودة إلى تسجيل الدخول"
   },
   "header": {
     "greeting": "مرحباً، {{name}}",

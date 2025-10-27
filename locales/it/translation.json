@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "Caricamento...",
@@ -31,7 +30,21 @@
     "loggingInButton": "Caricamento...",
     "switchToSignup": "Non hai un account? Registrati",
     "otpSuccessMessage": "Registrazione quasi completata! Controlla il telefono per il codice di verifica.",
-    "profileCreationError": "Verifica riuscita! Ma non siamo riusciti a salvare il tuo profilo: {{message}}. Riprova a registrarti."
+    "profileCreationError": "Verifica riuscita! Ma non siamo riusciti a salvare il tuo profilo: {{message}}. Riprova a registrarti.",
+    "forgotPasswordLink": "Password dimenticata?",
+    "forgotPasswordTitle": "Reimposta password",
+    "forgotPasswordInstruction": "Inserisci il tuo numero di telefono e ti invieremo un codice per reimpostare la password.",
+    "sendResetCodeButton": "Invia codice",
+    "sendingCodeButton": "Invio in corso...",
+    "updatePasswordTitle": "Aggiorna la tua password",
+    "updatePasswordInstruction": "Abbiamo inviato un codice a {{phone}}. Inseriscilo qui sotto insieme alla tua nuova password.",
+    "otpPlaceholder": "Codice di verifica",
+    "newPasswordPlaceholder": "Nuova password",
+    "updatePasswordButton": "Aggiorna password",
+    "updatingPasswordButton": "Aggiornamento...",
+    "passwordUpdateSuccess": "La tua password è stata aggiornata con successo! Ora puoi accedere con la tua nuova password.",
+    "resetCodeSuccessMessage": "Un codice per reimpostare la password è stato inviato al tuo telefono.",
+    "backToLogin": "Torna al login"
   },
   "header": {
     "greeting": "Ciao, {{name}}",

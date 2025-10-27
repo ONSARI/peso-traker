@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "Yükleniyor...",
@@ -31,7 +30,21 @@
     "loggingInButton": "Yükleniyor...",
     "switchToSignup": "Hesabınız yok mu? Kaydolun",
     "otpSuccessMessage": "Kayıt neredeyse tamamlandı! Doğrulama kodu için telefonunuzu kontrol edin.",
-    "profileCreationError": "Doğrulama başarılı! Ancak profilinizi kaydedemedik: {{message}}. Lütfen tekrar kaydolmayı deneyin."
+    "profileCreationError": "Doğrulama başarılı! Ancak profilinizi kaydedemedik: {{message}}. Lütfen tekrar kaydolmayı deneyin.",
+    "forgotPasswordLink": "Şifrenizi mi unuttunuz?",
+    "forgotPasswordTitle": "Şifreyi Sıfırla",
+    "forgotPasswordInstruction": "Telefon numaranızı girin, şifrenizi sıfırlamanız için size bir kod göndereceğiz.",
+    "sendResetCodeButton": "Sıfırlama Kodu Gönder",
+    "sendingCodeButton": "Gönderiliyor...",
+    "updatePasswordTitle": "Şifrenizi Güncelleyin",
+    "updatePasswordInstruction": "{{phone}} numarasına bir kod gönderdik. Yeni şifrenizle birlikte aşağıya girin.",
+    "otpPlaceholder": "Doğrulama Kodu",
+    "newPasswordPlaceholder": "Yeni Şifre",
+    "updatePasswordButton": "Şifreyi Güncelle",
+    "updatingPasswordButton": "Güncelleniyor...",
+    "passwordUpdateSuccess": "Şifreniz başarıyla güncellendi! Şimdi yeni şifrenizle giriş yapabilirsiniz.",
+    "resetCodeSuccessMessage": "Telefonunuza bir şifre sıfırlama kodu gönderildi.",
+    "backToLogin": "Giriş ekranına geri dön"
   },
   "header": {
     "greeting": "Merhaba, {{name}}",

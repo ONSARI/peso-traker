@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "Cargando...",
@@ -31,7 +30,21 @@
     "loggingInButton": "Cargando...",
     "switchToSignup": "¿No tienes cuenta? Regístrate",
     "otpSuccessMessage": "¡Registro casi completo! Revisa tu teléfono para obtener el código de verificación.",
-    "profileCreationError": "¡Verificación exitosa! Pero no pudimos guardar tu perfil: {{message}}. Por favor, intenta registrarte de nuevo."
+    "profileCreationError": "¡Verificación exitosa! Pero no pudimos guardar tu perfil: {{message}}. Por favor, intenta registrarte de nuevo.",
+    "forgotPasswordLink": "¿Olvidaste tu contraseña?",
+    "forgotPasswordTitle": "Restablecer Contraseña",
+    "forgotPasswordInstruction": "Introduce tu número de teléfono y te enviaremos un código para restablecer tu contraseña.",
+    "sendResetCodeButton": "Enviar Código",
+    "sendingCodeButton": "Enviando...",
+    "updatePasswordTitle": "Actualiza Tu Contraseña",
+    "updatePasswordInstruction": "Hemos enviado un código a {{phone}}. Introdúcelo abajo junto con tu nueva contraseña.",
+    "otpPlaceholder": "Código de Verificación",
+    "newPasswordPlaceholder": "Nueva Contraseña",
+    "updatePasswordButton": "Actualizar Contraseña",
+    "updatingPasswordButton": "Actualizando...",
+    "passwordUpdateSuccess": "¡Tu contraseña se ha actualizado correctamente! Ahora puedes iniciar sesión con tu nueva contraseña.",
+    "resetCodeSuccessMessage": "Se ha enviado un código de restablecimiento de contraseña a tu teléfono.",
+    "backToLogin": "Volver al inicio de sesión"
   },
   "header": {
     "greeting": "Hola, {{name}}",

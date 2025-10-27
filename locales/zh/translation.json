@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "加载中...",
@@ -31,7 +30,21 @@
     "loggingInButton": "加载中...",
     "switchToSignup": "还没有账户？注册",
     "otpSuccessMessage": "注册即将完成！请检查您的手机以获取验证码。",
-    "profileCreationError": "验证成功！但我们无法保存您的个人资料：{{message}}。请尝试重新注册。"
+    "profileCreationError": "验证成功！但我们无法保存您的个人资料：{{message}}。请尝试重新注册。",
+    "forgotPasswordLink": "忘记密码？",
+    "forgotPasswordTitle": "重设密码",
+    "forgotPasswordInstruction": "请输入您的电话号码，我们将向您发送一个代码以重设密码。",
+    "sendResetCodeButton": "发送重设码",
+    "sendingCodeButton": "发送中...",
+    "updatePasswordTitle": "更新您的密码",
+    "updatePasswordInstruction": "我们已向 {{phone}} 发送了一个代码。请在下方输入该代码和您的新密码。",
+    "otpPlaceholder": "验证码",
+    "newPasswordPlaceholder": "新密码",
+    "updatePasswordButton": "更新密码",
+    "updatingPasswordButton": "更新中...",
+    "passwordUpdateSuccess": "您的密码已成功更新！您现在可以用新密码登录了。",
+    "resetCodeSuccessMessage": "密码重设码已发送到您的手机。",
+    "backToLogin": "返回登录"
   },
   "header": {
     "greeting": "嗨，{{name}}",

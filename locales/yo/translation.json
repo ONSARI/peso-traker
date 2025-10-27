@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "O n gberu...",
@@ -31,7 +30,21 @@
     "loggingInButton": "O n gberu...",
     "switchToSignup": "O ko ni akọọlẹ? Forukọsilẹ",
     "otpSuccessMessage": "Iforukọsilẹ ti fẹrẹ pari! Ṣayẹwo foonu rẹ fun koodu ijẹrisi.",
-    "profileCreationError": "Ijẹrisi ṣaṣeyọri! Ṣugbọn a ko le fi profaili rẹ pamọ: {{message}}. Jọwọ gbiyanju lati forukọsilẹ lẹẹkansi."
+    "profileCreationError": "Ijẹrisi ṣaṣeyọri! Ṣugbọn a ko le fi profaili rẹ pamọ: {{message}}. Jọwọ gbiyanju lati forukọsilẹ lẹẹkansi.",
+    "forgotPasswordLink": "Gbagbe ọrọ aṣina rẹ?",
+    "forgotPasswordTitle": "Tun Ọrọ aṣina Rẹ Ṣeto",
+    "forgotPasswordInstruction": "Tẹ nọmba foonu rẹ sii a yoo fi koodu ranṣẹ si ọ lati tun ọrọ aṣina rẹ ṣeto.",
+    "sendResetCodeButton": "Fi Koodu Atunto Ranṣẹ",
+    "sendingCodeButton": "O n firanṣẹ...",
+    "updatePasswordTitle": "Ṣe Imudojuiwọn Ọrọ aṣina Rẹ",
+    "updatePasswordInstruction": "A fi koodu ranṣẹ si {{phone}}. Tẹ sii ni isalẹ pẹlu ọrọ aṣina tuntun rẹ.",
+    "otpPlaceholder": "Koodu Ijẹrisi",
+    "newPasswordPlaceholder": "Ọrọ aṣina Tuntun",
+    "updatePasswordButton": "Ṣe Imudojuiwọn Ọrọ aṣina",
+    "updatingPasswordButton": "O n ṣe imudojuiwọn...",
+    "passwordUpdateSuccess": "Ọrọ aṣina rẹ ti ni imudojuiwọn ni aṣeyọri! O le wọle bayi pẹlu ọrọ aṣina tuntun rẹ.",
+    "resetCodeSuccessMessage": "A ti fi koodu atunto ọrọ aṣina ranṣẹ si foonu rẹ.",
+    "backToLogin": "Pada si Oju-iwe Wiwọle"
   },
   "header": {
     "greeting": "Pẹlẹ o, {{name}}",

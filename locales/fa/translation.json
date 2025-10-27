@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "در حال بارگذاری...",
@@ -31,7 +30,21 @@
     "loggingInButton": "در حال بارگذاری...",
     "switchToSignup": "حساب کاربری ندارید؟ ثبت نام کنید",
     "otpSuccessMessage": "ثبت نام تقریباً کامل شد! کد تأیید را در تلفن خود بررسی کنید.",
-    "profileCreationError": "تأیید موفقیت‌آمیز بود! اما نتوانستیم پروفایل شما را ذخیره کنیم: {{message}}. لطفاً دوباره ثبت نام کنید."
+    "profileCreationError": "تأیید موفقیت‌آمیز بود! اما نتوانستیم پروفایل شما را ذخیره کنیم: {{message}}. لطفاً دوباره ثبت نام کنید.",
+    "forgotPasswordLink": "رمز عبور خود را فراموش کرده‌اید؟",
+    "forgotPasswordTitle": "بازنشانی رمز عبور",
+    "forgotPasswordInstruction": "شماره تلفن خود را وارد کنید تا کدی برای بازنشانی رمز عبور برایتان ارسال کنیم.",
+    "sendResetCodeButton": "ارسال کد بازنشانی",
+    "sendingCodeButton": "در حال ارسال...",
+    "updatePasswordTitle": "رمز عبور خود را به‌روز کنید",
+    "updatePasswordInstruction": "ما یک کد به شماره {{phone}} ارسال کردیم. آن را به همراه رمز عبور جدید خود در زیر وارد کنید.",
+    "otpPlaceholder": "کد تأیید",
+    "newPasswordPlaceholder": "رمز عبور جدید",
+    "updatePasswordButton": "به‌روزرسانی رمز عبور",
+    "updatingPasswordButton": "در حال به‌روزرسانی...",
+    "passwordUpdateSuccess": "رمز عبور شما با موفقیت به‌روز شد! اکنون می‌توانید با رمز عبور جدید خود وارد شوید.",
+    "resetCodeSuccessMessage": "یک کد بازنشانی رمز عبور به تلفن شما ارسال شد.",
+    "backToLogin": "بازگشت به ورود"
   },
   "header": {
     "greeting": "سلام، {{name}}",

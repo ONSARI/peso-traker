@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import HttpBackend from 'i18next-http-backend';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import HttpBackend from 'i18next-http-backend';
 
 export const supportedLngs = {
   en: { name: 'English', flag: '🇬🇧' },
@@ -35,7 +35,7 @@ i18next
     interpolation: {
       escapeValue: false, // React already safes from xss
     },
-    backend: {
+     backend: {
       loadPath: '/locales/{{lng}}/translation.json',
     },
   });

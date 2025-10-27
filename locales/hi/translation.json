@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "लोड हो रहा है...",
@@ -31,7 +30,21 @@
     "loggingInButton": "लोड हो रहा है...",
     "switchToSignup": "खाता नहीं है? साइन अप करें",
     "otpSuccessMessage": "पंजीकरण लगभग पूरा हो गया है! सत्यापन कोड के लिए अपना फ़ोन जांचें।",
-    "profileCreationError": "सत्यापन सफल! लेकिन हम आपकी प्रोफ़ाइल सहेज नहीं सके: {{message}}। कृपया फिर से पंजीकरण करने का प्रयास करें।"
+    "profileCreationError": "सत्यापन सफल! लेकिन हम आपकी प्रोफ़ाइल सहेज नहीं सके: {{message}}। कृपया फिर से पंजीकरण करने का प्रयास करें।",
+    "forgotPasswordLink": "अपना पासवर्ड भूल गए?",
+    "forgotPasswordTitle": "पासवर्ड रीसेट करें",
+    "forgotPasswordInstruction": "अपना फ़ोन नंबर दर्ज करें और हम आपको पासवर्ड रीसेट करने के लिए एक कोड भेजेंगे।",
+    "sendResetCodeButton": "रीसेट कोड भेजें",
+    "sendingCodeButton": "भेजा जा रहा है...",
+    "updatePasswordTitle": "अपना पासवर्ड अपडेट करें",
+    "updatePasswordInstruction": "हमने {{phone}} पर एक कोड भेजा है। इसे नीचे अपने नए पासवर्ड के साथ दर्ज करें।",
+    "otpPlaceholder": "सत्यापन कोड",
+    "newPasswordPlaceholder": "नया पासवर्ड",
+    "updatePasswordButton": "पासवर्ड अपडेट करें",
+    "updatingPasswordButton": "अपडेट हो रहा है...",
+    "passwordUpdateSuccess": "आपका पासवर्ड सफलतापूर्वक अपडेट हो गया है! अब आप अपने नए पासवर्ड से लॉग इन कर सकते हैं।",
+    "resetCodeSuccessMessage": "एक पासवर्ड रीसेट कोड आपके फ़ोन पर भेज दिया गया है।",
+    "backToLogin": "लॉगिन पर वापस"
   },
   "header": {
     "greeting": "नमस्ते, {{name}}",

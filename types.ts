@@ -1,3 +1,5 @@
+import React from 'react';
+
 export interface UserProfile {
     id: string; // Corresponds to the user's UUID in Supabase auth
     name: string;

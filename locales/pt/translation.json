@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "Carregando...",
@@ -31,7 +30,21 @@
     "loggingInButton": "Carregando...",
     "switchToSignup": "Não tem uma conta? Cadastre-se",
     "otpSuccessMessage": "Cadastro quase completo! Verifique seu telefone para o código de verificação.",
-    "profileCreationError": "Verificação bem-sucedida! Mas não conseguimos salvar seu perfil: {{message}}. Por favor, tente se registrar novamente."
+    "profileCreationError": "Verificação bem-sucedida! Mas não conseguimos salvar seu perfil: {{message}}. Por favor, tente se registrar novamente.",
+    "forgotPasswordLink": "Esqueceu sua senha?",
+    "forgotPasswordTitle": "Redefinir Senha",
+    "forgotPasswordInstruction": "Digite seu número de telefone e enviaremos um código para redefinir sua senha.",
+    "sendResetCodeButton": "Enviar Código de Redefinição",
+    "sendingCodeButton": "Enviando...",
+    "updatePasswordTitle": "Atualize Sua Senha",
+    "updatePasswordInstruction": "Enviamos um código para {{phone}}. Digite-o abaixo junto com sua nova senha.",
+    "otpPlaceholder": "Código de Verificação",
+    "newPasswordPlaceholder": "Nova Senha",
+    "updatePasswordButton": "Atualizar Senha",
+    "updatingPasswordButton": "Atualizando...",
+    "passwordUpdateSuccess": "Sua senha foi atualizada com sucesso! Agora você pode fazer login com sua nova senha.",
+    "resetCodeSuccessMessage": "Um código de redefinição de senha foi enviado para o seu telefone.",
+    "backToLogin": "Voltar para o Login"
   },
   "header": {
     "greeting": "Olá, {{name}}",

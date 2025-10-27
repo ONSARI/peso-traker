@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "লোড হচ্ছে...",
@@ -31,7 +30,21 @@
     "loggingInButton": "লোড হচ্ছে...",
     "switchToSignup": "অ্যাকাউন্ট নেই? সাইন আপ করুন",
     "otpSuccessMessage": "নিবন্ধন প্রায় সম্পূর্ণ! যাচাইকরণ কোডের জন্য আপনার ফোন দেখুন।",
-    "profileCreationError": "যাচাই সফল! কিন্তু আমরা আপনার প্রোফাইল সংরক্ষণ করতে পারিনি: {{message}}। অনুগ্রহ করে আবার নিবন্ধন করার চেষ্টা করুন।"
+    "profileCreationError": "যাচাই সফল! কিন্তু আমরা আপনার প্রোফাইল সংরক্ষণ করতে পারিনি: {{message}}। অনুগ্রহ করে আবার নিবন্ধন করার চেষ্টা করুন।",
+    "forgotPasswordLink": "পাসওয়ার্ড ভুলে গেছেন?",
+    "forgotPasswordTitle": "পাসওয়ার্ড রিসেট করুন",
+    "forgotPasswordInstruction": "আপনার ফোন নম্বর লিখুন এবং আমরা আপনাকে পাসওয়ার্ড রিসেট করার জন্য একটি কোড পাঠাব।",
+    "sendResetCodeButton": "রিসেট কোড পাঠান",
+    "sendingCodeButton": "পাঠানো হচ্ছে...",
+    "updatePasswordTitle": "আপনার পাসওয়ার্ড আপডেট করুন",
+    "updatePasswordInstruction": "আমরা {{phone}}-এ একটি কোড পাঠিয়েছি। আপনার নতুন পাসওয়ার্ড সহ নীচে এটি লিখুন।",
+    "otpPlaceholder": "যাচাইকরণ কোড",
+    "newPasswordPlaceholder": "নতুন পাসওয়ার্ড",
+    "updatePasswordButton": "পাসওয়ার্ড আপডেট করুন",
+    "updatingPasswordButton": "আপডেট করা হচ্ছে...",
+    "passwordUpdateSuccess": "আপনার পাসওয়ার্ড সফলভাবে আপডেট করা হয়েছে! আপনি এখন আপনার নতুন পাসওয়ার্ড দিয়ে লগ ইন করতে পারেন।",
+    "resetCodeSuccessMessage": "একটি পাসওয়ার্ড রিসেট কোড আপনার ফোনে পাঠানো হয়েছে।",
+    "backToLogin": "লগইনে ফিরে যান"
   },
   "header": {
     "greeting": "হাই, {{name}}",

@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "Loading...",
@@ -31,7 +30,21 @@
     "loggingInButton": "Loading...",
     "switchToSignup": "Don't have an account? Sign up",
     "otpSuccessMessage": "Registration almost complete! Check your phone for the verification code.",
-    "profileCreationError": "Verification successful! But we couldn't save your profile: {{message}}. Please try to register again."
+    "profileCreationError": "Verification successful! But we couldn't save your profile: {{message}}. Please try to register again.",
+    "forgotPasswordLink": "Forgot your password?",
+    "forgotPasswordTitle": "Reset Password",
+    "forgotPasswordInstruction": "Enter your phone number and we'll send you a code to reset your password.",
+    "sendResetCodeButton": "Send Reset Code",
+    "sendingCodeButton": "Sending...",
+    "updatePasswordTitle": "Update Your Password",
+    "updatePasswordInstruction": "We sent a code to {{phone}}. Enter it below along with your new password.",
+    "otpPlaceholder": "Verification Code",
+    "newPasswordPlaceholder": "New Password",
+    "updatePasswordButton": "Update Password",
+    "updatingPasswordButton": "Updating...",
+    "passwordUpdateSuccess": "Your password has been updated successfully! You can now log in with your new password.",
+    "resetCodeSuccessMessage": "A password reset code has been sent to your phone.",
+    "backToLogin": "Back to Login"
   },
   "header": {
     "greeting": "Hi, {{name}}",

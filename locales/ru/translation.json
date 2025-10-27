@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "Загрузка...",
@@ -31,7 +30,21 @@
     "loggingInButton": "Загрузка...",
     "switchToSignup": "Нет аккаунта? Зарегистрироваться",
     "otpSuccessMessage": "Регистрация почти завершена! Проверьте свой телефон на наличие кода подтверждения.",
-    "profileCreationError": "Подтверждение прошло успешно! Но мы не смогли сохранить ваш профиль: {{message}}. Пожалуйста, попробуйте зарегистрироваться снова."
+    "profileCreationError": "Подтверждение прошло успешно! Но мы не смогли сохранить ваш профиль: {{message}}. Пожалуйста, попробуйте зарегистрироваться снова.",
+    "forgotPasswordLink": "Забыли пароль?",
+    "forgotPasswordTitle": "Сброс пароля",
+    "forgotPasswordInstruction": "Введите ваш номер телефона, и мы отправим вам код для сброса пароля.",
+    "sendResetCodeButton": "Отправить код сброса",
+    "sendingCodeButton": "Отправка...",
+    "updatePasswordTitle": "Обновите ваш пароль",
+    "updatePasswordInstruction": "Мы отправили код на номер {{phone}}. Введите его ниже вместе с вашим новым паролем.",
+    "otpPlaceholder": "Код подтверждения",
+    "newPasswordPlaceholder": "Новый пароль",
+    "updatePasswordButton": "Обновить пароль",
+    "updatingPasswordButton": "Обновление...",
+    "passwordUpdateSuccess": "Ваш пароль успешно обновлен! Теперь вы можете войти с новым паролем.",
+    "resetCodeSuccessMessage": "Код для сброса пароля был отправлен на ваш телефон.",
+    "backToLogin": "Вернуться ко входу"
   },
   "header": {
     "greeting": "Привет, {{name}}",

@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "Memuat...",
@@ -31,7 +30,21 @@
     "loggingInButton": "Memuat...",
     "switchToSignup": "Tidak punya akun? Daftar",
     "otpSuccessMessage": "Pendaftaran hampir selesai! Periksa ponsel Anda untuk kode verifikasi.",
-    "profileCreationError": "Verifikasi berhasil! Tapi kami tidak dapat menyimpan profil Anda: {{message}}. Silakan coba mendaftar lagi."
+    "profileCreationError": "Verifikasi berhasil! Tapi kami tidak dapat menyimpan profil Anda: {{message}}. Silakan coba mendaftar lagi.",
+    "forgotPasswordLink": "Lupa kata sandi?",
+    "forgotPasswordTitle": "Atur Ulang Kata Sandi",
+    "forgotPasswordInstruction": "Masukkan nomor telepon Anda dan kami akan mengirimkan kode untuk mengatur ulang kata sandi Anda.",
+    "sendResetCodeButton": "Kirim Kode Reset",
+    "sendingCodeButton": "Mengirim...",
+    "updatePasswordTitle": "Perbarui Kata Sandi Anda",
+    "updatePasswordInstruction": "Kami telah mengirimkan kode ke {{phone}}. Masukkan di bawah ini bersama dengan kata sandi baru Anda.",
+    "otpPlaceholder": "Kode Verifikasi",
+    "newPasswordPlaceholder": "Kata Sandi Baru",
+    "updatePasswordButton": "Perbarui Kata Sandi",
+    "updatingPasswordButton": "Memperbarui...",
+    "passwordUpdateSuccess": "Kata sandi Anda telah berhasil diperbarui! Sekarang Anda dapat masuk dengan kata sandi baru Anda.",
+    "resetCodeSuccessMessage": "Kode reset kata sandi telah dikirim ke ponsel Anda.",
+    "backToLogin": "Kembali ke Login"
   },
   "header": {
     "greeting": "Hai, {{name}}",

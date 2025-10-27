@@ -25,10 +25,13 @@ const Auth: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState('');
 
-    const [view, setView] = useState<'login' | 'signup' | 'verifyPhone'>('login');
+    const [view, setView] = useState<'login' | 'signup' | 'verifyPhone' | 'forgotPassword' | 'updatePassword'>('login');
     const [loginLocalPhone, setLoginLocalPhone] = useState('');
+    const [localPhoneForReset, setLocalPhoneForReset] = useState('');
+    const [phoneForReset, setPhoneForReset] = useState('');
 
     const [password, setPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
     const [name, setName] = useState('');
     const [dob, setDob] = useState('');
     const [height, setHeight] = useState(''); // For cm
@@ -142,7 +145,70 @@ const Auth: React.FC = () => {
         setLoading(false);
     };
 
-    const switchView = (newView: 'login' | 'signup') => {
+    const handlePasswordResetRequest = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        setMessage('');
+
+        const fullPhoneNumber = `${selectedCountry.dial_code}${localPhoneForReset}`;
+        setPhoneForReset(fullPhoneNumber);
+
+        const { error } = await supabase.auth.signInWithOtp({
+            phone: fullPhoneNumber,
+        });
+
+        if (error) {
+            setError(error.message);
+        } else {
+            setMessage(t('auth.resetCodeSuccessMessage'));
+            setView('updatePassword');
+        }
+        setLoading(false);
+    };
+
+    const handleUpdatePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        setMessage('');
+
+        const { data, error } = await supabase.auth.verifyOtp({
+            phone: phoneForReset,
+            token: phoneOtp,
+            type: 'sms'
+        });
+
+        if (error) {
+            setError(error.message);
+            setLoading(false);
+            return;
+        }
+        
+        // OTP verification successful, user is now in a session, update password
+        const { error: updateError } = await supabase.auth.updateUser({
+            password: newPassword,
+        });
+
+        if (updateError) {
+            setError(updateError.message);
+        } else {
+            // Sign out for security after password change
+            await supabase.auth.signOut();
+            setMessage(t('auth.passwordUpdateSuccess'));
+            setView('login');
+            // Clear sensitive fields
+            setPhoneOtp('');
+            setNewPassword('');
+            setPhoneForReset('');
+            setLocalPhoneForReset('');
+        }
+        
+        setLoading(false);
+    };
+
+
+    const switchView = (newView: 'login' | 'signup' | 'forgotPassword') => {
         setView(newView);
         setError(null);
         setMessage('');
@@ -152,6 +218,67 @@ const Auth: React.FC = () => {
 
     const renderContent = () => {
         switch (view) {
+             case 'updatePassword':
+                return (
+                    <>
+                        <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.updatePasswordTitle')}</h2>
+                        <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.updatePasswordInstruction', { phone: phoneForReset })}</p>
+                        <form noValidate onSubmit={handleUpdatePassword} className="flex flex-col items-center justify-center gap-4">
+                            <input type="tel" value={phoneOtp} onChange={(e) => setPhoneOtp(e.target.value)} placeholder={t('auth.otpPlaceholder')} required maxLength={6} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary text-center tracking-[1rem] dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t('auth.newPasswordPlaceholder')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                            <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
+                                {loading ? t('auth.updatingPasswordButton') : t('auth.updatePasswordButton')}
+                            </button>
+                        </form>
+                         <button onClick={() => setView('login')} className="text-sm text-primary hover:underline mt-4">
+                            {t('auth.backToLogin')}
+                        </button>
+                    </>
+                );
+            case 'forgotPassword':
+                return (
+                     <>
+                        <h2 className="text-2xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('auth.forgotPasswordTitle')}</h2>
+                        <p className="text-text-secondary dark:text-gray-400 mb-6">{t('auth.forgotPasswordInstruction')}</p>
+                        <form noValidate onSubmit={handlePasswordResetRequest} className="flex flex-col items-center justify-center gap-4">
+                            <div className="w-full">
+                                <div className="flex rtl:flex-row-reverse">
+                                     <select
+                                        id="country-code-reset"
+                                        value={selectedCountry.code}
+                                        onChange={(e) => {
+                                            const country = countries.find(c => c.code === e.target.value);
+                                            if (country) setSelectedCountry(country);
+                                        }}
+                                        className="bg-gray-100 border border-gray-300 rounded-l-lg rtl:rounded-l-none rtl:rounded-r-lg border-r-0 rtl:border-r rtl:border-l-0 pl-3 pr-4 rtl:pl-4 rtl:pr-3 py-2 text-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+                                        aria-label="Country code"
+                                    >
+                                        {countries.map((country) => (
+                                            <option key={country.code} value={country.code}>
+                                                {country.flag} {country.dial_code}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        id="phone-input-reset"
+                                        type="tel"
+                                        value={localPhoneForReset}
+                                        onChange={(e) => setLocalPhoneForReset(e.target.value.replace(/[^0-9]/g, ''))}
+                                        placeholder={t('auth.phonePlaceholder')}
+                                        required
+                                        className="w-full px-4 py-2 text-lg border border-gray-300 rounded-r-lg rtl:rounded-r-none rtl:rounded-l-lg focus:ring-2 focus:ring-primary focus:border-transparent z-10 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                                    />
+                                </div>
+                            </div>
+                            <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
+                                {loading ? t('auth.sendingCodeButton') : t('auth.sendResetCodeButton')}
+                            </button>
+                        </form>
+                         <button onClick={() => switchView('login')} className="text-sm text-primary hover:underline mt-4">
+                            {t('auth.backToLogin')}
+                        </button>
+                    </>
+                );
             case 'verifyPhone':
                 return (
                     <>
@@ -274,6 +401,9 @@ const Auth: React.FC = () => {
                                 </div>
                             </div>
                             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('auth.passwordPlaceholder')} required className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                            <button onClick={() => switchView('forgotPassword')} type="button" className="text-sm text-text-secondary dark:text-gray-400 hover:text-primary hover:underline self-end">
+                                {t('auth.forgotPasswordLink')}
+                            </button>
                             <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-2 px-6 rounded-lg hover:bg-primary-focus transition-colors duration-300 mt-2 disabled:bg-gray-400">
                                 {loading ? t('auth.loggingInButton') : t('auth.loginButton')}
                             </button>
@@ -460,11 +590,13 @@ const Dashboard: React.FC<{ userProfile: UserProfile, authUser: User, initialWei
     const [seenAchievements, setSeenAchievements] = useLocalStorage<string[]>('seenAchievements', []);
 
     useEffect(() => {
-        const unseenUnlocked = Array.from(unlockedAchievementIds).filter(id => !seenAchievements.includes(id));
+        // FIX: Use spread syntax `[...]` to convert Set to Array to ensure correct type inference.
+        const unseenUnlocked = [...unlockedAchievementIds].filter(id => !seenAchievements.includes(id));
         if (unseenUnlocked.length > 0) {
             const achievementToCelebrate = ALL_ACHIEVEMENTS.find(ach => ach.id === unseenUnlocked[0]);
             if(achievementToCelebrate) {
                 setNewlyUnlocked({ ...achievementToCelebrate, Icon: ICONS_MAP[achievementToCelebrate.id] });
+                // FIX: The `unseenUnlocked` variable is now correctly typed as `string[]`, resolving the assignment error.
                 setSeenAchievements(prev => [...prev, ...unseenUnlocked]);
             }
         }

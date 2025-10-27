@@ -1,4 +1,3 @@
-
 {
   "auth": {
     "loading": "טוען...",
@@ -31,7 +30,21 @@
     "loggingInButton": "טוען...",
     "switchToSignup": "אין לך חשבון? הירשם",
     "otpSuccessMessage": "ההרשמה כמעט הושלמה! בדוק את הטלפון שלך לקבלת קוד האימות.",
-    "profileCreationError": "האימות הצליח! אך לא הצלחנו לשמור את הפרופיל שלך: {{message}}. נסה להירשם שוב."
+    "profileCreationError": "האימות הצליח! אך לא הצלחנו לשמור את הפרופיל שלך: {{message}}. נסה להירשם שוב.",
+    "forgotPasswordLink": "שכחת את הסיסמה?",
+    "forgotPasswordTitle": "איפוס סיסמה",
+    "forgotPasswordInstruction": "הזן את מספר הטלפון שלך ונשלח לך קוד לאיפוס הסיסמה.",
+    "sendResetCodeButton": "שלח קוד איפוס",
+    "sendingCodeButton": "שולח...",
+    "updatePasswordTitle": "עדכן את הסיסמה שלך",
+    "updatePasswordInstruction": "שלחנו קוד ל-{{phone}}. הזן אותו למטה יחד עם הסיסמה החדשה שלך.",
+    "otpPlaceholder": "קוד אימות",
+    "newPasswordPlaceholder": "סיסמה חדשה",
+    "updatePasswordButton": "עדכן סיסמה",
+    "updatingPasswordButton": "מעדכן...",
+    "passwordUpdateSuccess": "הסיסמה שלך עודכנה בהצלחה! כעת תוכל להתחבר עם הסיסמה החדשה שלך.",
+    "resetCodeSuccessMessage": "קוד איפוס סיסמה נשלח לטלפון שלך.",
+    "backToLogin": "חזרה להתחברות"
   },
   "header": {
     "greeting": "היי, {{name}}",
