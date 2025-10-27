@@ -14,6 +14,7 @@ import type { Country } from './countries';
 import { getCountriesByLanguage } from './countries';
 import { useTranslation, Trans } from 'react-i18next';
 import useLocalStorage from './hooks/useLocalStorage';
+import { LanguageSwitcher } from './components/LanguageSwitcher';
 
 
 // --- Components ---
@@ -39,9 +40,17 @@ const Auth: React.FC = () => {
     const [heightUnit, setHeightUnit] = useState<'cm' | 'ft'>('cm');
     const [phone, setPhone] = useState(''); // Stores the full phone number for OTP verification
     const [localPhone, setLocalPhone] = useState(''); // Stores just the local part of the number
-    const [countries, setCountries] = useState<Country[]>(getCountriesByLanguage('es'));
+    const [countries, setCountries] = useState<Country[]>(getCountriesByLanguage(i18n.language));
     const [selectedCountry, setSelectedCountry] = useState<Country>(countries.find(c => c.code === 'ES') || countries[0]);
     const [phoneOtp, setPhoneOtp] = useState('');
+
+    useEffect(() => {
+        setCountries(getCountriesByLanguage(i18n.language));
+        const currentSelectedCountry = countries.find(c => c.dial_code === selectedCountry.dial_code);
+        if(!currentSelectedCountry){
+            setSelectedCountry(countries[0]);
+        }
+    }, [i18n.language]);
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -225,16 +234,16 @@ const Auth: React.FC = () => {
                                 <div className="flex rtl:flex-row-reverse">
                                      <select
                                         id="country-code-reset"
-                                        value={selectedCountry.code}
+                                        value={selectedCountry.dial_code}
                                         onChange={(e) => {
-                                            const country = countries.find(c => c.code === e.target.value);
+                                            const country = countries.find(c => c.dial_code === e.target.value);
                                             if (country) setSelectedCountry(country);
                                         }}
                                         className="bg-gray-100 border border-gray-300 rounded-l-lg rtl:rounded-l-none rtl:rounded-r-lg border-r-0 rtl:border-r rtl:border-l-0 pl-3 pr-4 rtl:pl-4 rtl:pr-3 py-2 text-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
                                         aria-label="Country code"
                                     >
                                         {countries.map((country) => (
-                                            <option key={country.code} value={country.code}>
+                                            <option key={country.code} value={country.dial_code}>
                                                 {country.flag} {country.dial_code}
                                             </option>
                                         ))}
@@ -308,17 +317,17 @@ const Auth: React.FC = () => {
                                 <div className="flex rtl:flex-row-reverse">
                                     <select
                                         id="country-code"
-                                        value={selectedCountry.code}
+                                        value={selectedCountry.dial_code}
                                         onChange={(e) => {
-                                            const country = countries.find(c => c.code === e.target.value);
+                                            const country = countries.find(c => c.dial_code === e.target.value);
                                             if (country) setSelectedCountry(country);
                                         }}
                                         className="bg-gray-100 border border-gray-300 rounded-l-lg rtl:rounded-l-none rtl:rounded-r-lg border-r-0 rtl:border-r rtl:border-l-0 pl-3 pr-4 rtl:pl-4 rtl:pr-3 py-2 text-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
                                         aria-label="Country code"
                                     >
                                         {countries.map((country) => (
-                                            <option key={country.code} value={country.code}>
-                                                {country.flag} {country.dial_code}
+                                            <option key={country.code} value={country.dial_code}>
+                                                {country.flag} {country.name} ({country.dial_code})
                                             </option>
                                         ))}
                                     </select>
@@ -355,16 +364,16 @@ const Auth: React.FC = () => {
                                 <div className="flex rtl:flex-row-reverse">
                                     <select
                                         id="country-code-login"
-                                        value={selectedCountry.code}
+                                        value={selectedCountry.dial_code}
                                         onChange={(e) => {
-                                            const country = countries.find(c => c.code === e.target.value);
+                                            const country = countries.find(c => c.dial_code === e.target.value);
                                             if (country) setSelectedCountry(country);
                                         }}
                                         className="bg-gray-100 border border-gray-300 rounded-l-lg rtl:rounded-l-none rtl:rounded-r-lg border-r-0 rtl:border-r rtl:border-l-0 pl-3 pr-4 rtl:pl-4 rtl:pr-3 py-2 text-lg text-text-secondary focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
                                         aria-label="Country code"
                                     >
                                         {countries.map((country) => (
-                                            <option key={country.code} value={country.code}>
+                                            <option key={country.code} value={country.dial_code}>
                                                 {country.flag} {country.dial_code}
                                             </option>
                                         ))}
@@ -399,7 +408,10 @@ const Auth: React.FC = () => {
 
     return (
         <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex items-center justify-center min-h-screen">
-            <div className="bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center max-w-md mx-auto w-full">
+            <div className="relative bg-card dark:bg-gray-800 p-8 rounded-lg shadow-lg text-center max-w-md mx-auto w-full">
+                <div className="absolute top-4 right-4 rtl:right-auto rtl:left-4">
+                    <LanguageSwitcher />
+                </div>
                 {message && <p className="bg-green-100 text-green-700 p-3 rounded-lg mb-4 dark:bg-green-900/50 dark:text-green-300">{message}</p>}
                 {error && <p className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 dark:bg-red-900/50 dark:text-red-300">{error}</p>}
                 {renderContent()}
@@ -476,6 +488,7 @@ const Header: React.FC<{ name: string; onNameChange: (name: string) => void; onS
                             </button>
                         </div>
                     )}
+                    <LanguageSwitcher />
                     <DarkModeToggle theme={theme} onToggle={onThemeToggle} />
                      <button onClick={onSignOut} className="bg-secondary text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-80 transition-colors">{t('header.logout')}</button>
                 </div>
