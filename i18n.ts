@@ -16,6 +16,7 @@ const translationEN = {
     "signupTitle": "Create Your Account",
     "signupInstruction": "Complete your details to get started.",
     "namePlaceholder": "Your name",
+    "nameRequiredError": "Please enter your name.",
     "dobLabel": "Date of birth",
     "heightUnitLabel": "Height Unit",
     "cm": "cm",
@@ -77,7 +78,7 @@ const translationEN = {
       "step2": "<1>Step 2:</1> Open the Supabase SQL Editor for your project.",
       "step3": "Step 3: Paste the entire script into the editor and click 'RUN'.",
       "step4": "Step 4: Once it finishes, come back here, log out, and log back in. The problem will be solved!",
-      "fullSQLScript": "-- This script resets and creates the necessary security policies.\n-- It is safe to run multiple times.\n\n-- 1. Enable RLS on tables\nALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.weights ENABLE ROW LEVEL SECURITY;\n\n-- 2. Clean up old policies on 'profiles' table\nDROP POLICY IF EXISTS \"Enable read access for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can view their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable update for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can update their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Los usuarios pueden actualizar su propio perfil\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable insert for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can insert their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual read access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual update access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual insert access on profiles\" ON public.profiles;\n\n-- 3. Create correct policies for 'profiles' table\nCREATE POLICY \"Allow individual read access on profiles\"\nON public.profiles FOR SELECT\nUSING (auth.uid() = id);\n\nCREATE POLICY \"Allow individual update access on profiles\"\nON public.profiles FOR UPDATE\nUSING (auth.uid() = id) WITH CHECK (auth.uid() = id);\n\nCREATE POLICY \"Allow individual insert access on profiles\"\nON public.profiles FOR INSERT\nWITH CHECK (auth.uid() = id);\n\n-- 4. Clean up old policies on 'weights' table\nDROP POLICY IF EXISTS \"Allow individual read access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual insert access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual delete access on weights\" ON public.weights;\n\n-- 5. Create correct policies for 'weights' table\nCREATE POLICY \"Allow individual read access on weights\"\nON public.weights FOR SELECT\nUSING (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual insert access on weights\"\nON public.weights FOR INSERT\nWITH CHECK (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual delete access on weights\"\nON public.weights FOR DELETE\nUSING (auth.uid() = user_id);"
+      "fullSQLScript": "-- This script resets and creates the necessary security policies.\n-- It is safe to run multiple times.\n\n-- 1. Enable RLS on tables\nALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.weights ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.measurements ENABLE ROW LEVEL SECURITY;\n\n-- 2. Clean up old policies on 'profiles' table\nDROP POLICY IF EXISTS \"Enable read access for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can view their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable update for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can update their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Los usuarios pueden actualizar su propio perfil\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable insert for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can insert their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual read access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual update access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual insert access on profiles\" ON public.profiles;\n\n-- 3. Create correct policies for 'profiles' table\nCREATE POLICY \"Allow individual read access on profiles\"\nON public.profiles FOR SELECT\nUSING (auth.uid() = id);\n\nCREATE POLICY \"Allow individual update access on profiles\"\nON public.profiles FOR UPDATE\nUSING (auth.uid() = id) WITH CHECK (auth.uid() = id);\n\nCREATE POLICY \"Allow individual insert access on profiles\"\nON public.profiles FOR INSERT\nWITH CHECK (auth.uid() = id);\n\n-- 4. Clean up old policies on 'weights' table\nDROP POLICY IF EXISTS \"Allow individual read access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual insert access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual delete access on weights\" ON public.weights;\n\n-- 5. Create correct policies for 'weights' table\nCREATE POLICY \"Allow individual read access on weights\"\nON public.weights FOR SELECT\nUSING (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual insert access on weights\"\nON public.weights FOR INSERT\nWITH CHECK (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual delete access on weights\"\nON public.weights FOR DELETE\nUSING (auth.uid() = user_id);\n\n-- 6. Create policies for 'measurements' table\nDROP POLICY IF EXISTS \"Allow individual read access on measurements\" ON public.measurements;\nDROP POLICY IF EXISTS \"Allow individual insert access on measurements\" ON public.measurements;\nDROP POLICY IF EXISTS \"Allow individual delete access on measurements\" ON public.measurements;\n\nCREATE POLICY \"Allow individual read access on measurements\"\nON public.measurements FOR SELECT\nUSING (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual insert access on measurements\"\nON public.measurements FOR INSERT\nWITH CHECK (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual delete access on measurements\"\nON public.measurements FOR DELETE\nUSING (auth.uid() = user_id);\n"
     },
     "schemaError": {
       "title": "Database Schema Error",
@@ -88,6 +89,8 @@ const translationEN = {
     "profileUpdateError": "Failed to save profile. This can be caused by database permissions (RLS) or a schema mismatch (e.g., incorrect table/column names).",
     "weightAddError": "Failed to add weight entry. This can be caused by database permissions (RLS) or a schema mismatch.",
     "weightDeleteError": "Failed to delete weight entry. This can be caused by database permissions (RLS) or a schema mismatch.",
+    "measurementAddError": "Failed to add measurement entry.",
+    "measurementDeleteError": "Failed to delete measurement entry.",
     "errorDetails": "Details: {{details}}"
   },
   "bmiCard": {
@@ -132,6 +135,7 @@ const translationEN = {
       "title": "Unit Preferences",
       "weight": "Weight",
       "height": "Height",
+      "measurements": "Measurements",
       "kg": "kg",
       "lbs": "lbs",
       "cm": "cm",
@@ -147,6 +151,14 @@ const translationEN = {
     "saveButton": "Save Weight",
     "validationError": "Please enter a valid weight and select a date."
   },
+    "measurementForm": {
+    "title": "Log Measurements",
+    "dateLabel": "Date",
+    "waistLabel": "Waist ({{unit}})",
+    "hipsLabel": "Hips ({{unit}})",
+    "chestLabel": "Chest ({{unit}})",
+    "saveButton": "Save Measurements"
+  },
   "history": {
     "title": "Weight History",
     "noEntries": "No weight entries yet. Add one to get started!",
@@ -155,13 +167,27 @@ const translationEN = {
     "actionsHeader": "Actions",
     "deleteLabel": "Delete entry"
   },
+  "measurementHistory": {
+    "title": "Measurement History",
+    "noEntries": "No measurements logged yet.",
+    "dateHeader": "Date",
+    "waistHeader": "Waist",
+    "hipsHeader": "Hips",
+    "chestHeader": "Chest",
+    "actionsHeader": "Actions"
+  },
   "charts": {
     "noDataWeight": "Enter at least two weight entries to see your progress chart.",
     "noDataBmi": "Enter at least two weight entries to see your BMI trend chart.",
+    "noDataMeasurements": "Log at least two sets of measurements to see your trend chart.",
     "weightLabel": "Weight",
     "bmiLabel": "BMI",
     "yAxisLabelWeight": "Weight ({{unit}})",
-    "yAxisLabelBmi": "BMI"
+    "yAxisLabelBmi": "BMI",
+    "measurementTrend": "Measurement Trend",
+    "waist": "Waist",
+    "hips": "Hips",
+    "chest": "Chest"
   },
   "achievements": {
     "title": "Achievements",
@@ -187,6 +213,13 @@ const translationEN = {
       "title": "Goal Smasher!",
       "description": "You've reached your final target weight. Congratulations!"
     }
+  },
+  "aiCoach": {
+    "title": "Zen Assistant Analysis",
+    "getAnalysisButton": "Get My Analysis",
+    "loading": "Zen is analyzing your progress...",
+    "error": "Sorry, I couldn't complete the analysis right now. Please try again later.",
+    "intro": "Here's a quick look at your progress:"
   }
 };
 
@@ -201,6 +234,7 @@ const translationES = {
     "signupTitle": "Crea tu Cuenta",
     "signupInstruction": "Completa tus datos para empezar.",
     "namePlaceholder": "Tu nombre",
+    "nameRequiredError": "Por favor, introduce tu nombre.",
     "dobLabel": "Fecha de nacimiento",
     "heightUnitLabel": "Unidad de Altura",
     "cm": "cm",
@@ -262,7 +296,7 @@ const translationES = {
       "step2": "<1>Paso 2:</1> Abre el Editor de SQL de Supabase para tu proyecto.",
       "step3": "Paso 3: Pega el script completo en el editor y haz clic en 'RUN'.",
       "step4": "Paso 4: Cuando termine, vuelve aquí, cierra sesión y vuelve a iniciar sesión. ¡El problema estará resuelto!",
-      "fullSQLScript": "-- Este script reinicia y crea las políticas de seguridad necesarias.\n-- Es seguro ejecutarlo varias veces.\n\n-- 1. Habilitar RLS en las tablas\nALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.weights ENABLE ROW LEVEL SECURITY;\n\n-- 2. Limpiar políticas antiguas en la tabla 'profiles'\nDROP POLICY IF EXISTS \"Enable read access for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can view their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable update for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can update their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Los usuarios pueden actualizar su propio perfil\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable insert for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can insert their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual read access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual update access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual insert access on profiles\" ON public.profiles;\n\n-- 3. Crear políticas correctas para la tabla 'profiles'\nCREATE POLICY \"Allow individual read access on profiles\"\nON public.profiles FOR SELECT\nUSING (auth.uid() = id);\n\nCREATE POLICY \"Allow individual update access on profiles\"\nON public.profiles FOR UPDATE\nUSING (auth.uid() = id) WITH CHECK (auth.uid() = id);\n\nCREATE POLICY \"Allow individual insert access on profiles\"\nON public.profiles FOR INSERT\nWITH CHECK (auth.uid() = id);\n\n-- 4. Limpiar políticas antiguas en la tabla 'weights'\nDROP POLICY IF EXISTS \"Allow individual read access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual insert access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual delete access on weights\" ON public.weights;\n\n-- 5. Crear políticas correctas para la tabla 'weights'\nCREATE POLICY \"Allow individual read access on weights\"\nON public.weights FOR SELECT\nUSING (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual insert access on weights\"\nON public.weights FOR INSERT\nWITH CHECK (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual delete access on weights\"\nON public.weights FOR DELETE\nUSING (auth.uid() = user_id);"
+      "fullSQLScript": "-- Este script reinicia y crea las políticas de seguridad necesarias.\n-- Es seguro ejecutarlo varias veces.\n\n-- 1. Habilitar RLS en las tablas\nALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.weights ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.measurements ENABLE ROW LEVEL SECURITY;\n\n-- 2. Limpiar políticas antiguas en la tabla 'profiles'\nDROP POLICY IF EXISTS \"Enable read access for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can view their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable update for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can update their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Los usuarios pueden actualizar su propio perfil\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable insert for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can insert their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual read access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual update access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual insert access on profiles\" ON public.profiles;\n\n-- 3. Crear políticas correctas para la tabla 'profiles'\nCREATE POLICY \"Allow individual read access on profiles\"\nON public.profiles FOR SELECT\nUSING (auth.uid() = id);\n\nCREATE POLICY \"Allow individual update access on profiles\"\nON public.profiles FOR UPDATE\nUSING (auth.uid() = id) WITH CHECK (auth.uid() = id);\n\nCREATE POLICY \"Allow individual insert access on profiles\"\nON public.profiles FOR INSERT\nWITH CHECK (auth.uid() = id);\n\n-- 4. Limpiar políticas antiguas en la tabla 'weights'\nDROP POLICY IF EXISTS \"Allow individual read access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual insert access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual delete access on weights\" ON public.weights;\n\n-- 5. Crear políticas correctas para la tabla 'weights'\nCREATE POLICY \"Allow individual read access on weights\"\nON public.weights FOR SELECT\nUSING (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual insert access on weights\"\nON public.weights FOR INSERT\nWITH CHECK (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual delete access on weights\"\nON public.weights FOR DELETE\nUSING (auth.uid() = user_id);\n\n-- 6. Crear políticas para la tabla 'measurements'\nDROP POLICY IF EXISTS \"Allow individual read access on measurements\" ON public.measurements;\nDROP POLICY IF EXISTS \"Allow individual insert access on measurements\" ON public.measurements;\nDROP POLICY IF EXISTS \"Allow individual delete access on measurements\" ON public.measurements;\n\nCREATE POLICY \"Allow individual read access on measurements\"\nON public.measurements FOR SELECT\nUSING (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual insert access on measurements\"\nON public.measurements FOR INSERT\nWITH CHECK (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual delete access on measurements\"\nON public.measurements FOR DELETE\nUSING (auth.uid() = user_id);\n"
     },
     "schemaError": {
       "title": "Error de Esquema de la Base de Datos",
@@ -273,6 +307,8 @@ const translationES = {
     "profileUpdateError": "No se pudieron guardar los cambios del perfil. Esto puede ser por permisos (RLS) o un desajuste del esquema (ej: nombres de tabla/columna incorrectos).",
     "weightAddError": "No se pudo añadir el registro de peso. Esto puede ser por permisos (RLS) o un desajuste del esquema.",
     "weightDeleteError": "No se pudo eliminar el registro de peso. Esto puede ser por permisos (RLS) o un desajuste del esquema.",
+    "measurementAddError": "No se pudo añadir el registro de medidas.",
+    "measurementDeleteError": "No se pudo eliminar el registro de medidas.",
     "errorDetails": "Detalles: {{details}}"
   },
   "bmiCard": {
@@ -317,6 +353,7 @@ const translationES = {
       "title": "Preferencias de Unidades",
       "weight": "Peso",
       "height": "Altura",
+      "measurements": "Medidas",
       "kg": "kg",
       "lbs": "lbs",
       "cm": "cm",
@@ -332,6 +369,14 @@ const translationES = {
     "saveButton": "Guardar Peso",
     "validationError": "Por favor, introduce un peso válido y selecciona una fecha."
   },
+   "measurementForm": {
+    "title": "Registrar Medidas",
+    "dateLabel": "Fecha",
+    "waistLabel": "Cintura ({{unit}})",
+    "hipsLabel": "Cadera ({{unit}})",
+    "chestLabel": "Pecho ({{unit}})",
+    "saveButton": "Guardar Medidas"
+  },
   "history": {
     "title": "Historial de Peso",
     "noEntries": "Aún no hay registros de peso. ¡Añade uno para empezar!",
@@ -340,13 +385,27 @@ const translationES = {
     "actionsHeader": "Acciones",
     "deleteLabel": "Eliminar registro"
   },
+  "measurementHistory": {
+    "title": "Historial de Medidas",
+    "noEntries": "Aún no hay medidas registradas.",
+    "dateHeader": "Fecha",
+    "waistHeader": "Cintura",
+    "hipsHeader": "Cadera",
+    "chestHeader": "Pecho",
+    "actionsHeader": "Acciones"
+  },
   "charts": {
     "noDataWeight": "Introduce al menos dos registros de peso para ver tu gráfico de progreso.",
     "noDataBmi": "Introduce al menos dos registros de peso para ver tu gráfico de tendencia de IMC.",
+    "noDataMeasurements": "Registra al menos dos conjuntos de medidas para ver tu gráfico de tendencias.",
     "weightLabel": "Peso",
     "bmiLabel": "IMC",
     "yAxisLabelWeight": "Peso ({{unit}})",
-    "yAxisLabelBmi": "IMC"
+    "yAxisLabelBmi": "IMC",
+    "measurementTrend": "Tendencia de Medidas",
+    "waist": "Cintura",
+    "hips": "Cadera",
+    "chest": "Pecho"
   },
   "achievements": {
     "title": "Logros",
@@ -372,6 +431,13 @@ const translationES = {
       "title": "¡Meta Cumplida!",
       "description": "Has alcanzado tu meta final de peso. ¡Felicidades!"
     }
+  },
+    "aiCoach": {
+    "title": "Análisis del Asistente Zen",
+    "getAnalysisButton": "Obtener mi Análisis",
+    "loading": "Zen está analizando tu progreso...",
+    "error": "Lo siento, no pude completar el análisis en este momento. Por favor, inténtalo de nuevo más tarde.",
+    "intro": "Aquí tienes un vistazo rápido a tu progreso:"
   }
 };
 
@@ -386,6 +452,7 @@ const translationPT = {
     "signupTitle": "Crie a sua Conta",
     "signupInstruction": "Complete os seus dados para começar.",
     "namePlaceholder": "Seu nome",
+    "nameRequiredError": "Por favor, insira o seu nome.",
     "dobLabel": "Data de nascimento",
     "heightUnitLabel": "Unidade de Altura",
     "cm": "cm",
@@ -447,7 +514,7 @@ const translationPT = {
       "step2": "<1>Passo 2:</1> Abra o Editor de SQL do Supabase para o seu projeto.",
       "step3": "Passo 3: Cole o script inteiro no editor e clique em 'RUN'.",
       "step4": "Passo 4: Quando terminar, volte aqui, saia da sessão e inicie sessão novamente. O problema estará resolvido!",
-      "fullSQLScript": "-- Este script redefine e cria as políticas de segurança necessárias.\n-- É seguro executá-lo várias vezes.\n\n-- 1. Ativar RLS nas tabelas\nALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.weights ENABLE ROW LEVEL SECURITY;\n\n-- 2. Limpar políticas antigas na tabela 'profiles'\nDROP POLICY IF EXISTS \"Enable read access for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can view their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable update for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can update their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Los usuarios pueden actualizar su propio perfil\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable insert for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can insert their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual read access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual update access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual insert access on profiles\" ON public.profiles;\n\n-- 3. Criar políticas corretas para a tabela 'profiles'\nCREATE POLICY \"Allow individual read access on profiles\"\nON public.profiles FOR SELECT\nUSING (auth.uid() = id);\n\nCREATE POLICY \"Allow individual update access on profiles\"\nON public.profiles FOR UPDATE\nUSING (auth.uid() = id) WITH CHECK (auth.uid() = id);\n\nCREATE POLICY \"Allow individual insert access on profiles\"\nON public.profiles FOR INSERT\nWITH CHECK (auth.uid() = id);\n\n-- 4. Limpar políticas antigas na tabela 'weights'\nDROP POLICY IF EXISTS \"Allow individual read access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual insert access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual delete access on weights\" ON public.weights;\n\n-- 5. Criar políticas corretas para a tabela 'weights'\nCREATE POLICY \"Allow individual read access on weights\"\nON public.weights FOR SELECT\nUSING (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual insert access on weights\"\nON public.weights FOR INSERT\nWITH CHECK (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual delete access on weights\"\nON public.weights FOR DELETE\nUSING (auth.uid() = user_id);"
+      "fullSQLScript": "-- Este script redefine e cria as políticas de segurança necessárias.\n-- É seguro executá-lo várias vezes.\n\n-- 1. Ativar RLS nas tabelas\nALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.weights ENABLE ROW LEVEL SECURITY;\nALTER TABLE public.measurements ENABLE ROW LEVEL SECURITY;\n\n-- 2. Limpar políticas antigas na tabela 'profiles'\nDROP POLICY IF EXISTS \"Enable read access for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can view their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable update for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can update their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Los usuarios pueden actualizar su propio perfil\" ON public.profiles;\nDROP POLICY IF EXISTS \"Enable insert for own user\" ON public.profiles;\nDROP POLICY IF EXISTS \"Users can insert their own profile.\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual read access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual update access on profiles\" ON public.profiles;\nDROP POLICY IF EXISTS \"Allow individual insert access on profiles\" ON public.profiles;\n\n-- 3. Criar políticas corretas para a tabela 'profiles'\nCREATE POLICY \"Allow individual read access on profiles\"\nON public.profiles FOR SELECT\nUSING (auth.uid() = id);\n\nCREATE POLICY \"Allow individual update access on profiles\"\nON public.profiles FOR UPDATE\nUSING (auth.uid() = id) WITH CHECK (auth.uid() = id);\n\nCREATE POLICY \"Allow individual insert access on profiles\"\nON public.profiles FOR INSERT\nWITH CHECK (auth.uid() = id);\n\n-- 4. Limpar políticas antigas na tabela 'weights'\nDROP POLICY IF EXISTS \"Allow individual read access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual insert access on weights\" ON public.weights;\nDROP POLICY IF EXISTS \"Allow individual delete access on weights\" ON public.weights;\n\n-- 5. Criar políticas corretas para a tabela 'weights'\nCREATE POLICY \"Allow individual read access on weights\"\nON public.weights FOR SELECT\nUSING (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual insert access on weights\"\nON public.weights FOR INSERT\nWITH CHECK (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual delete access on weights\"\nON public.weights FOR DELETE\nUSING (auth.uid() = user_id);\n\n-- 6. Criar políticas para a tabela 'measurements'\nDROP POLICY IF EXISTS \"Allow individual read access on measurements\" ON public.measurements;\nDROP POLICY IF EXISTS \"Allow individual insert access on measurements\" ON public.measurements;\nDROP POLICY IF EXISTS \"Allow individual delete access on measurements\" ON public.measurements;\n\nCREATE POLICY \"Allow individual read access on measurements\"\nON public.measurements FOR SELECT\nUSING (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual insert access on measurements\"\nON public.measurements FOR INSERT\nWITH CHECK (auth.uid() = user_id);\n\nCREATE POLICY \"Allow individual delete access on measurements\"\nON public.measurements FOR DELETE\nUSING (auth.uid() = user_id);\n"
     },
     "schemaError": {
       "title": "Erro de Esquema da Base de Dados",
@@ -458,6 +525,8 @@ const translationPT = {
     "profileUpdateError": "Não foi possível salvar as alterações do perfil. Pode ser causado por permissões (RLS) ou incompatibilidade de esquema (ex: nomes de tabela/coluna incorretos).",
     "weightAddError": "Não foi possível adicionar o registo de peso. Pode ser causado por permissões (RLS) ou incompatibilidade de esquema.",
     "weightDeleteError": "Não foi possível excluir o registo de peso. Pode ser causado por permissões (RLS) ou incompatibilidade de esquema.",
+    "measurementAddError": "Falha ao adicionar registo de medição.",
+    "measurementDeleteError": "Falha ao eliminar registo de medição.",
     "errorDetails": "Detalhes: {{details}}"
   },
   "bmiCard": {
@@ -502,6 +571,7 @@ const translationPT = {
       "title": "Preferências de Unidades",
       "weight": "Peso",
       "height": "Altura",
+      "measurements": "Medidas",
       "kg": "kg",
       "lbs": "lbs",
       "cm": "cm",
@@ -517,6 +587,14 @@ const translationPT = {
     "saveButton": "Guardar Peso",
     "validationError": "Por favor, insira um peso válido e selecione uma data."
   },
+  "measurementForm": {
+    "title": "Registar Medidas",
+    "dateLabel": "Data",
+    "waistLabel": "Cintura ({{unit}})",
+    "hipsLabel": "Ancas ({{unit}})",
+    "chestLabel": "Peito ({{unit}})",
+    "saveButton": "Guardar Medidas"
+  },
   "history": {
     "title": "Histórico de Peso",
     "noEntries": "Ainda não há registos de peso. Adicione um para começar!",
@@ -525,13 +603,27 @@ const translationPT = {
     "actionsHeader": "Ações",
     "deleteLabel": "Eliminar registo"
   },
+  "measurementHistory": {
+    "title": "Histórico de Medidas",
+    "noEntries": "Nenhuma medida registada ainda.",
+    "dateHeader": "Data",
+    "waistHeader": "Cintura",
+    "hipsHeader": "Ancas",
+    "chestHeader": "Peito",
+    "actionsHeader": "Ações"
+  },
   "charts": {
     "noDataWeight": "Insira pelo menos dois registos de peso para ver o seu gráfico de progresso.",
     "noDataBmi": "Insira pelo menos dois registos de peso para ver o seu gráfico de tendência de IMC.",
+    "noDataMeasurements": "Registe pelo menos dois conjuntos de medidas para ver o seu gráfico de tendências.",
     "weightLabel": "Peso",
     "bmiLabel": "IMC",
     "yAxisLabelWeight": "Peso ({{unit}})",
-    "yAxisLabelBmi": "IMC"
+    "yAxisLabelBmi": "IMC",
+    "measurementTrend": "Tendência de Medidas",
+    "waist": "Cintura",
+    "hips": "Ancas",
+    "chest": "Peito"
   },
   "achievements": {
     "title": "Conquistas",
@@ -557,6 +649,13 @@ const translationPT = {
       "title": "Meta Cumprida!",
       "description": "Atingiu a sua meta final de peso. Parabéns!"
     }
+  },
+  "aiCoach": {
+    "title": "Análise do Assistente Zen",
+    "getAnalysisButton": "Obter a Minha Análise",
+    "loading": "O Zen está a analisar o seu progresso...",
+    "error": "Desculpe, não consegui completar a análise neste momento. Por favor, tente novamente mais tarde.",
+    "intro": "Aqui está uma rápida visão do seu progresso:"
   }
 };
 

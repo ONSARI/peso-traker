@@ -7,6 +7,7 @@ export interface UserProfile {
     dob: string; // YYYY-MM-DD
     weight_unit?: 'kg' | 'lbs';
     height_unit?: 'cm' | 'ft';
+    measurement_unit?: 'cm' | 'in';
     goal_weight_1?: number | null;
     goal_weight_2?: number | null;
     goal_weight_final?: number | null;
@@ -18,6 +19,16 @@ export interface WeightEntry {
     weight: number; // in kg
     user_id: string;
 }
+
+export interface MeasurementEntry {
+    id: number;
+    date: string; // YYYY-MM-DD
+    user_id: string;
+    waist?: number | null; // in cm
+    hips?: number | null; // in cm
+    chest?: number | null; // in cm
+}
+
 
 export interface Achievement {
   id: string;

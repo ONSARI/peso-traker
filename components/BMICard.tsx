@@ -74,6 +74,7 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
 
     const weightUnit = profile.weight_unit || 'kg';
     const heightUnit = profile.height_unit || 'cm';
+    const measurementUnit = profile.measurement_unit || 'cm';
     const { height, goal_weight_1, goal_weight_2, goal_weight_final } = profile;
 
     useEffect(() => {
@@ -487,7 +488,7 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
                 
                  <div className="space-y-3 pt-2">
                     <h3 className="text-sm font-semibold text-text-secondary dark:text-gray-400 text-center">{t('bmiCard.units.title')}</h3>
-                    <div className="flex justify-around">
+                    <div className="flex flex-wrap justify-around gap-4">
                         <div className="flex items-center gap-2">
                             <span className="text-text-secondary dark:text-gray-400 text-sm">{t('bmiCard.units.weight')}:</span>
                             <UnitToggleButton options={[{value: 'kg', label: t('bmiCard.units.kg')}, {value: 'lbs', label: t('bmiCard.units.lbs')}]} currentValue={weightUnit} onChange={(val) => onProfileUpdate({ weight_unit: val })} />
@@ -495,6 +496,10 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
                          <div className="flex items-center gap-2">
                             <span className="text-text-secondary dark:text-gray-400 text-sm">{t('bmiCard.units.height')}:</span>
                              <UnitToggleButton options={[{value: 'cm', label: t('bmiCard.units.cm')}, {value: 'ft', label: t('bmiCard.units.ft')}]} currentValue={heightUnit} onChange={(val) => onProfileUpdate({ height_unit: val })} />
+                        </div>
+                         <div className="flex items-center gap-2">
+                            <span className="text-text-secondary dark:text-gray-400 text-sm">{t('bmiCard.units.measurements')}:</span>
+                             <UnitToggleButton options={[{value: 'cm', label: t('bmiCard.units.cm')}, {value: 'in', label: t('bmiCard.units.in')}]} currentValue={measurementUnit} onChange={(val) => onProfileUpdate({ measurement_unit: val })} />
                         </div>
                     </div>
                 </div>

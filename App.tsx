@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
-import type { UserProfile, WeightEntry, Achievement, Country } from './types';
+import type { UserProfile, WeightEntry, Achievement, Country, MeasurementEntry } from './types';
 import { supabase, supabaseUrl } from './supabaseClient';
 import { BMICard } from './components/BMICard';
 import { WeightChart } from './components/WeightChart';
@@ -14,6 +14,10 @@ import { useTranslation, Trans } from 'react-i18next';
 import useLocalStorage from './hooks/useLocalStorage';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { getCountriesByLanguage } from './countries';
+import { MeasurementForm } from './components/MeasurementForm';
+import { MeasurementHistory } from './components/MeasurementHistory';
+import { MeasurementChart } from './components/MeasurementChart';
+import { AICoach } from './components/AICoach';
 
 
 // --- Components ---
@@ -145,6 +149,11 @@ const Auth: React.FC = () => {
 
         let profileData: Partial<UserProfile> | undefined;
         if (flow === 'signup') {
+             if (!name.trim()) {
+                setError(t('auth.nameRequiredError'));
+                setLoading(false);
+                return;
+            }
             let heightInCm: number;
             if (heightUnit === 'cm') {
                 heightInCm = parseFloat(height);
@@ -158,7 +167,7 @@ const Auth: React.FC = () => {
                 setLoading(false);
                 return;
             }
-            profileData = { name, dob, height: heightInCm, height_unit: heightUnit, weight_unit: 'kg' };
+            profileData = { name: name.trim(), dob, height: heightInCm, height_unit: heightUnit, weight_unit: 'kg' };
         }
 
         const { error } = await supabase.auth.signInWithOtp({ phone: fullPhone });
@@ -511,6 +520,7 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [entries, setEntries] = useState<WeightEntry[]>([]);
+  const [measurements, setMeasurements] = useState<MeasurementEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [appError, setAppError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<{title: string, body: React.ReactNode} | null>(null);
@@ -565,13 +575,10 @@ const App: React.FC = () => {
 
     if (profileError) {
       if (!handleDatabaseError(profileError)) {
-        // A non-RLS, non-schema error occurred, show a generic message
         setAppError(t('dashboard.profileFetchError'));
       }
       setProfile(null);
     } else if (profileData) {
-      // Check if the goal columns exist on the fetched object.
-      // The property will be undefined if the column doesn't exist in the table.
       if (profileData.goal_weight_final === undefined) {
         console.warn('Schema needs fix: goal_weight_final property is missing from profile data.');
         setSchemaNeedsFix(true);
@@ -592,6 +599,19 @@ const App: React.FC = () => {
     } else {
       setEntries(weightsData || []);
     }
+    
+    const { data: measurementsData, error: measurementsError } = await supabase
+      .from('measurements')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('date', { ascending: true });
+    
+    if (measurementsError) {
+        console.error('Error fetching measurements:', measurementsError)
+    } else {
+        setMeasurements(measurementsData || []);
+    }
+
     setLoading(false);
   }, [t, handleDatabaseError]);
 
@@ -605,6 +625,7 @@ const App: React.FC = () => {
       } else {
         setProfile(null);
         setEntries([]);
+        setMeasurements([]);
         setLoading(false);
       }
     });
@@ -679,6 +700,33 @@ const App: React.FC = () => {
       setEntries(prev => prev.filter(entry => entry.id !== id));
     }
   }, [t, handleDatabaseError]);
+
+  const addMeasurement = useCallback(async (entry: Omit<MeasurementEntry, 'id' | 'user_id'>) => {
+      if (!user) return;
+      setAppError(null);
+      const { data, error } = await supabase
+        .from('measurements')
+        .insert([{ ...entry, user_id: user.id }])
+        .select()
+        .single();
+      
+      if (error) {
+          console.error('Error adding measurement entry:', error);
+          setAppError(t('dashboard.measurementAddError'));
+      } else if (data) {
+          setMeasurements(prev => [...prev, data].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+      }
+  }, [user, t]);
+
+  const deleteMeasurement = useCallback(async (id: number) => {
+      const { error } = await supabase.from('measurements').delete().eq('id', id);
+      if (error) {
+          console.error('Error deleting measurement entry:', error);
+          setAppError(t('dashboard.measurementDeleteError'));
+      } else {
+          setMeasurements(prev => prev.filter(entry => entry.id !== id));
+      }
+  }, [t]);
 
   const checkAchievements = useCallback(() => {
     if (entries.length === 0 || !profile) return;
@@ -842,7 +890,6 @@ const App: React.FC = () => {
                     onChange={(e) => setNewName(e.target.value)} 
                     className="px-2 py-1 border-b-2 border-primary bg-transparent focus:outline-none dark:text-white"
                     autoFocus
-                    onBlur={() => setEditingName(false)}
                   />
                   <button type="submit" className="text-green-500 hover:text-green-700">✓</button>
                   <button type="button" onClick={() => setEditingName(false)} className="text-red-500 hover:text-red-700">×</button>
@@ -888,7 +935,11 @@ const App: React.FC = () => {
             <Achievements allAchievements={allAchievements} unlockedIds={unlockedAchievementIds} />
           </div>
           <div className="lg:col-span-2 space-y-6">
-            <WeightForm onAddEntry={addWeightEntry} weightUnit={profile.weight_unit || 'kg'} />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <WeightForm onAddEntry={addWeightEntry} weightUnit={profile.weight_unit || 'kg'} />
+                <MeasurementForm onAddEntry={addMeasurement} measurementUnit={profile.measurement_unit || 'cm'} />
+            </div>
+            <AICoach profile={profile} weightEntries={entries} measurementEntries={measurements} />
             <div className="bg-card dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
                 <h2 className="text-xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('dashboard.weightTrend')}</h2>
                 <WeightChart data={entries} weightUnit={profile.weight_unit || 'kg'} theme={theme}/>
@@ -897,7 +948,13 @@ const App: React.FC = () => {
                  <h2 className="text-xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('dashboard.bmiTrend')}</h2>
                 <BMIChart data={bmiChartData} theme={theme} />
             </div>
-            <WeightHistory entries={entries} onDeleteEntry={deleteWeightEntry} weightUnit={profile.weight_unit || 'kg'} />
+             <div className="bg-card dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
+                <MeasurementChart data={measurements} measurementUnit={profile.measurement_unit || 'cm'} theme={theme} />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <WeightHistory entries={entries} onDeleteEntry={deleteWeightEntry} weightUnit={profile.weight_unit || 'kg'} />
+                <MeasurementHistory entries={measurements} onDeleteEntry={deleteMeasurement} measurementUnit={profile.measurement_unit || 'cm'} />
+            </div>
           </div>
         </div>
       </main>
