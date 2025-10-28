@@ -232,6 +232,11 @@ const translationEN = {
     "loading": "Zen is analyzing your progress...",
     "error": "Sorry, I couldn't complete the analysis right now. Please try again later.",
     "intro": "Here's a quick look at your progress:"
+  },
+  "avatarCard": {
+    "title": "Your Zen Avatar",
+    "noData": "Add some body measurements to see your avatar.",
+    "showingDataFor": "Showing data from {{date}}"
   }
 };
 
@@ -462,6 +467,11 @@ const translationES = {
     "loading": "Zen está analizando tu progreso...",
     "error": "Lo siento, no pude completar el análisis en este momento. Por favor, inténtalo de nuevo más tarde.",
     "intro": "Aquí tienes un vistazo rápido a tu progreso:"
+  },
+  "avatarCard": {
+    "title": "Tu Avatar Zen",
+    "noData": "Añade algunas medidas corporales para ver tu avatar.",
+    "showingDataFor": "Mostrando datos de {{date}}"
   }
 };
 
@@ -692,6 +702,11 @@ const translationPT = {
     "loading": "O Zen está a analisar o seu progresso...",
     "error": "Desculpe, não consegui completar a análise neste momento. Por favor, tente novamente mais tarde.",
     "intro": "Aqui está uma rápida visão do seu progresso:"
+  },
+  "avatarCard": {
+    "title": "Seu Avatar Zen",
+    "noData": "Adicione algumas medidas corporais para ver o seu avatar.",
+    "showingDataFor": "Mostrando dados de {{date}}"
   }
 };
 

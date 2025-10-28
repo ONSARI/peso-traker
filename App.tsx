@@ -18,6 +18,7 @@ import { MeasurementForm } from './components/MeasurementForm';
 import { MeasurementHistory } from './components/MeasurementHistory';
 import { MeasurementChart } from './components/MeasurementChart';
 import { AICoach } from './components/AICoach';
+import { AvatarCard } from './components/AvatarCard';
 
 
 // --- Components ---
@@ -939,6 +940,7 @@ const App: React.FC = () => {
                 <WeightForm onAddEntry={addWeightEntry} weightUnit={profile.weight_unit || 'kg'} />
                 <MeasurementForm onAddEntry={addMeasurement} measurementUnit={profile.measurement_unit || 'cm'} />
             </div>
+            <AvatarCard profile={profile} measurements={measurements} />
             <AICoach profile={profile} weightEntries={entries} measurementEntries={measurements} />
             <div className="bg-card dark:bg-gray-800 p-4 sm:p-6 rounded-lg shadow-lg">
                 <h2 className="text-xl font-bold text-text-primary dark:text-gray-100 mb-4">{t('dashboard.weightTrend')}</h2>
