@@ -705,6 +705,7 @@ const App: React.FC = () => {
   const addMeasurement = useCallback(async (entry: Omit<MeasurementEntry, 'id' | 'user_id'>) => {
       if (!user) return;
       setAppError(null);
+      setErrorDetails(null);
       const { data, error } = await supabase
         .from('measurements')
         .insert([{ ...entry, user_id: user.id }])
@@ -713,21 +714,27 @@ const App: React.FC = () => {
       
       if (error) {
           console.error('Error adding measurement entry:', error);
-          setAppError(t('dashboard.measurementAddError'));
+          if (!handleDatabaseError(error)) {
+            setAppError(`${t('dashboard.measurementAddError')} ${t('dashboard.errorDetails', { details: error.message })}`);
+          }
       } else if (data) {
           setMeasurements(prev => [...prev, data].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
       }
-  }, [user, t]);
+  }, [user, t, handleDatabaseError]);
 
   const deleteMeasurement = useCallback(async (id: number) => {
+      setAppError(null);
+      setErrorDetails(null);
       const { error } = await supabase.from('measurements').delete().eq('id', id);
       if (error) {
           console.error('Error deleting measurement entry:', error);
-          setAppError(t('dashboard.measurementDeleteError'));
+           if (!handleDatabaseError(error)) {
+            setAppError(`${t('dashboard.measurementDeleteError')} ${t('dashboard.errorDetails', { details: error.message })}`);
+          }
       } else {
           setMeasurements(prev => prev.filter(entry => entry.id !== id));
       }
-  }, [t]);
+  }, [t, handleDatabaseError]);
 
   const checkAchievements = useCallback(() => {
     if (entries.length === 0 || !profile) return;
