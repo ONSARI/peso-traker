@@ -494,6 +494,45 @@ const SchemaFixGuide: React.FC<{ projectRef?: string }> = ({ projectRef }) => {
     );
 };
 
+const MeasurementsSchemaFixGuide: React.FC<{ projectRef?: string }> = ({ projectRef }) => {
+    const { t } = useTranslation();
+    const [copied, setCopied] = useState(false);
+    const sqlEditorLink = projectRef 
+        ? `https://app.supabase.com/project/${projectRef}/sql/new` 
+        : `https://app.supabase.com/dashboard/project/${t('dashboard.rlsSolution.yourProjectRef')}/sql/new`;
+
+    const fullSQLScript = t('dashboard.measurementsSchemaError.script');
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(fullSQLScript);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="text-left rtl:text-right space-y-4">
+            <p className="font-bold text-lg">{t('dashboard.measurementsSchemaError.title')}</p>
+            <p className="text-sm">{t('dashboard.measurementsSchemaError.body')}</p>
+            
+            <div className="space-y-2">
+                <p className="font-semibold"><Trans i18nKey="dashboard.rlsSolution.step1" components={{ 1: <strong/> }} /></p>
+                <div className="relative bg-gray-100 dark:bg-gray-900 rounded-lg p-3">
+                    <button onClick={handleCopy} className="absolute top-2 right-2 rtl:right-auto rtl:left-2 bg-gray-200 dark:bg-gray-700 text-xs font-semibold px-2 py-1 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600">
+                        {copied ? t('dashboard.rlsSolution.copied') : t('dashboard.rlsSolution.copy')}
+                    </button>
+                    <pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-all overflow-x-auto">
+                        <code>{fullSQLScript}</code>
+                    </pre>
+                </div>
+            </div>
+
+            <p><Trans i18nKey="dashboard.rlsSolution.step2" components={{ 1: <a href={sqlEditorLink} target="_blank" rel="noopener noreferrer" className="text-primary font-bold hover:underline"/> }} /></p>
+            <p className="text-sm">{t('dashboard.rlsSolution.step3')}</p>
+            <p className="text-sm">{t('dashboard.rlsSolution.step4')}</p>
+        </div>
+    );
+};
+
 
 const DarkModeToggle: React.FC<{ theme: 'light' | 'dark'; onToggle: () => void }> = ({ theme, onToggle }) => {
   return (
@@ -551,8 +590,19 @@ const App: React.FC = () => {
         });
         return true;
     }
+
+    // Missing 'measurements' table error
+    const msg = error.message.toLowerCase();
+    if (msg.includes("relation \"public.measurements\" does not exist") || (msg.includes("could not find the table") && msg.includes("measurements"))) {
+        setErrorDetails({
+            title: t('dashboard.dataErrorTitle'),
+            body: <MeasurementsSchemaFixGuide projectRef={projectRef} />
+        });
+        return true;
+    }
+
     // Schema error (missing column/table) - this is now a fallback for unexpected schema errors
-    if (error.message.includes("column") && (error.message.includes("does not exist") || error.message.includes("Could not find"))) {
+    if (msg.includes("column") && (msg.includes("does not exist") || msg.includes("could not find"))) {
          setErrorDetails({
             title: t('dashboard.dataErrorTitle'),
             body: <SchemaFixGuide projectRef={projectRef} />
@@ -609,6 +659,8 @@ const App: React.FC = () => {
     
     if (measurementsError) {
         console.error('Error fetching measurements:', measurementsError)
+        // Check if the error is a missing table, but don't block the UI for it on initial load
+        handleDatabaseError(measurementsError);
     } else {
         setMeasurements(measurementsData || []);
     }
