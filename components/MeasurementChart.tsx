@@ -9,7 +9,7 @@ interface MeasurementChartProps {
     theme: 'light' | 'dark';
 }
 
-type MeasurableField = 'waist' | 'hips' | 'chest';
+type MeasurableField = 'waist' | 'hips' | 'chest' | 'right_arm' | 'left_arm' | 'right_leg' | 'left_leg';
 
 export const MeasurementChart: React.FC<MeasurementChartProps> = ({ data, measurementUnit, theme }) => {
     const { t, i18n } = useTranslation();
@@ -41,15 +41,26 @@ export const MeasurementChart: React.FC<MeasurementChartProps> = ({ data, measur
     const tooltipBorder = theme === 'dark' ? '#4b5563' : '#e2e8f0';
     const tooltipLabelColor = theme === 'dark' ? '#f3f4f6' : '#1e293b';
     
+    const colors: Record<MeasurableField, string> = {
+        waist: '#8884d8',
+        hips: '#82ca9d',
+        chest: '#ffc658',
+        right_arm: '#ff8042',
+        left_arm: '#0088FE',
+        right_leg: '#00C49F',
+        left_leg: '#FFBB28',
+    };
+    const chartColor = colors[activeChart];
     const chartName = t(`charts.${activeChart}`);
     const yAxisLabel = `${chartName} (${measurementUnit})`;
+    const fields: MeasurableField[] = ['waist', 'hips', 'chest', 'right_arm', 'left_arm', 'right_leg', 'left_leg'];
 
     return (
         <>
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
             <h2 className="text-xl font-bold text-text-primary dark:text-gray-100">{t('charts.measurementTrend')}</h2>
-             <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 p-0.5">
-                {(['waist', 'hips', 'chest'] as MeasurableField[]).map(field => (
+             <div className="flex flex-wrap justify-center rounded-lg border border-gray-300 dark:border-gray-600 p-0.5 gap-1">
+                {fields.map(field => (
                      <button 
                         key={field}
                         onClick={() => setActiveChart(field)}
@@ -89,7 +100,7 @@ export const MeasurementChart: React.FC<MeasurementChartProps> = ({ data, measur
                             }}
                         />
                         <Legend />
-                        <Line type="monotone" dataKey="value" name={chartName} stroke="#8884d8" strokeWidth={3} activeDot={{ r: 8 }} dot={{ r: 4, fill: '#8884d8' }} />
+                        <Line type="monotone" dataKey="value" name={chartName} stroke={chartColor} strokeWidth={3} activeDot={{ r: 8 }} dot={{ r: 4, fill: chartColor }} />
                     </LineChart>
                 </ResponsiveContainer>
             </div>

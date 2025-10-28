@@ -27,13 +27,17 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({ entries,
                 {entries.length === 0 ? (
                     <p className="text-center text-text-secondary dark:text-gray-400 py-8">{t('measurementHistory.noEntries')}</p>
                 ) : (
-                <table className="w-full text-left rtl:text-right">
+                <table className="w-full text-left rtl:text-right min-w-[600px]">
                     <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700/50 z-10">
                         <tr>
                             <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider">{t('measurementHistory.dateHeader')}</th>
                             <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.waistHeader')}</th>
                             <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.hipsHeader')}</th>
                             <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.chestHeader')}</th>
+                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.rightArmHeader')}</th>
+                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.leftArmHeader')}</th>
+                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.rightLegHeader')}</th>
+                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.leftLegHeader')}</th>
                             <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.actionsHeader')}</th>
                         </tr>
                     </thead>
@@ -46,6 +50,10 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({ entries,
                                 <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.waist)}</td>
                                 <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.hips)}</td>
                                 <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.chest)}</td>
+                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.right_arm)}</td>
+                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.left_arm)}</td>
+                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.right_leg)}</td>
+                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.left_leg)}</td>
                                 <td className="p-3 whitespace-nowrap text-center">
                                     <button
                                         onClick={() => onDeleteEntry(entry.id)}

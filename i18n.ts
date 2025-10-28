@@ -157,6 +157,10 @@ const translationEN = {
     "waistLabel": "Waist ({{unit}})",
     "hipsLabel": "Hips ({{unit}})",
     "chestLabel": "Chest ({{unit}})",
+    "rightArmLabel": "Right Bicep ({{unit}})",
+    "leftArmLabel": "Left Bicep ({{unit}})",
+    "rightLegLabel": "Right Quad ({{unit}})",
+    "leftLegLabel": "Left Quad ({{unit}})",
     "saveButton": "Save Measurements"
   },
   "history": {
@@ -174,6 +178,10 @@ const translationEN = {
     "waistHeader": "Waist",
     "hipsHeader": "Hips",
     "chestHeader": "Chest",
+    "rightArmHeader": "R. Bicep",
+    "leftArmHeader": "L. Bicep",
+    "rightLegHeader": "R. Quad",
+    "leftLegHeader": "L. Quad",
     "actionsHeader": "Actions"
   },
   "charts": {
@@ -187,7 +195,11 @@ const translationEN = {
     "measurementTrend": "Measurement Trend",
     "waist": "Waist",
     "hips": "Hips",
-    "chest": "Chest"
+    "chest": "Chest",
+    "right_arm": "Right Bicep",
+    "left_arm": "Left Bicep",
+    "right_leg": "Right Quad",
+    "left_leg": "Left Quad"
   },
   "achievements": {
     "title": "Achievements",
@@ -375,6 +387,10 @@ const translationES = {
     "waistLabel": "Cintura ({{unit}})",
     "hipsLabel": "Cadera ({{unit}})",
     "chestLabel": "Pecho ({{unit}})",
+    "rightArmLabel": "Bíceps Derecho ({{unit}})",
+    "leftArmLabel": "Bíceps Izquierdo ({{unit}})",
+    "rightLegLabel": "Cuádriceps Derecho ({{unit}})",
+    "leftLegLabel": "Cuádriceps Izquierdo ({{unit}})",
     "saveButton": "Guardar Medidas"
   },
   "history": {
@@ -392,6 +408,10 @@ const translationES = {
     "waistHeader": "Cintura",
     "hipsHeader": "Cadera",
     "chestHeader": "Pecho",
+    "rightArmHeader": "Bícep D.",
+    "leftArmHeader": "Bícep I.",
+    "rightLegHeader": "Cuád. D.",
+    "leftLegHeader": "Cuád. I.",
     "actionsHeader": "Acciones"
   },
   "charts": {
@@ -405,7 +425,11 @@ const translationES = {
     "measurementTrend": "Tendencia de Medidas",
     "waist": "Cintura",
     "hips": "Cadera",
-    "chest": "Pecho"
+    "chest": "Pecho",
+    "right_arm": "Bíceps Derecho",
+    "left_arm": "Bíceps Izquierdo",
+    "right_leg": "Cuádriceps Derecho",
+    "left_leg": "Cuádriceps Izquierdo"
   },
   "achievements": {
     "title": "Logros",
@@ -593,6 +617,10 @@ const translationPT = {
     "waistLabel": "Cintura ({{unit}})",
     "hipsLabel": "Ancas ({{unit}})",
     "chestLabel": "Peito ({{unit}})",
+    "rightArmLabel": "Bíceps Direito ({{unit}})",
+    "leftArmLabel": "Bíceps Esquerdo ({{unit}})",
+    "rightLegLabel": "Quadríceps Direito ({{unit}})",
+    "leftLegLabel": "Quadríceps Esquerdo ({{unit}})",
     "saveButton": "Guardar Medidas"
   },
   "history": {
@@ -610,6 +638,10 @@ const translationPT = {
     "waistHeader": "Cintura",
     "hipsHeader": "Ancas",
     "chestHeader": "Peito",
+    "rightArmHeader": "Bícep D.",
+    "leftArmHeader": "Bícep E.",
+    "rightLegHeader": "Quád. D.",
+    "leftLegHeader": "Quád. E.",
     "actionsHeader": "Ações"
   },
   "charts": {
@@ -623,7 +655,11 @@ const translationPT = {
     "measurementTrend": "Tendência de Medidas",
     "waist": "Cintura",
     "hips": "Ancas",
-    "chest": "Peito"
+    "chest": "Peito",
+    "right_arm": "Bíceps Direito",
+    "left_arm": "Bíceps Esquerdo",
+    "right_leg": "Quadríceps Direito",
+    "left_leg": "Quadríceps Esquerdo"
   },
   "achievements": {
     "title": "Conquistas",

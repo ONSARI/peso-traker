@@ -27,6 +27,10 @@ export interface MeasurementEntry {
     waist?: number | null; // in cm
     hips?: number | null; // in cm
     chest?: number | null; // in cm
+    right_arm?: number | null; // in cm
+    left_arm?: number | null; // in cm
+    right_leg?: number | null; // in cm
+    left_leg?: number | null; // in cm
 }
 
 

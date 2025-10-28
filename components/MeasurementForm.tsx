@@ -13,6 +13,10 @@ export const MeasurementForm: React.FC<MeasurementFormProps> = ({ onAddEntry, me
     const [waist, setWaist] = useState('');
     const [hips, setHips] = useState('');
     const [chest, setChest] = useState('');
+    const [rightArm, setRightArm] = useState('');
+    const [leftArm, setLeftArm] = useState('');
+    const [rightLeg, setRightLeg] = useState('');
+    const [leftLeg, setLeftLeg] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -28,6 +32,10 @@ export const MeasurementForm: React.FC<MeasurementFormProps> = ({ onAddEntry, me
             waist: toCm(waist),
             hips: toCm(hips),
             chest: toCm(chest),
+            right_arm: toCm(rightArm),
+            left_arm: toCm(leftArm),
+            right_leg: toCm(rightLeg),
+            left_leg: toCm(leftLeg),
         };
         
         // Only submit if at least one measurement is entered
@@ -36,6 +44,10 @@ export const MeasurementForm: React.FC<MeasurementFormProps> = ({ onAddEntry, me
             setWaist('');
             setHips('');
             setChest('');
+            setRightArm('');
+            setLeftArm('');
+            setRightLeg('');
+            setLeftLeg('');
         }
     };
     
@@ -82,6 +94,12 @@ export const MeasurementForm: React.FC<MeasurementFormProps> = ({ onAddEntry, me
                     {renderInput('measurementForm.waistLabel', waist, setWaist)}
                     {renderInput('measurementForm.hipsLabel', hips, setHips)}
                     {renderInput('measurementForm.chestLabel', chest, setChest)}
+                </div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    {renderInput('measurementForm.rightArmLabel', rightArm, setRightArm)}
+                    {renderInput('measurementForm.leftArmLabel', leftArm, setLeftArm)}
+                    {renderInput('measurementForm.rightLegLabel', rightLeg, setRightLeg)}
+                    {renderInput('measurementForm.leftLegLabel', leftLeg, setLeftLeg)}
                 </div>
                 <button type="submit" className="w-full bg-secondary text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary transition-colors duration-300">
                     {t('measurementForm.saveButton')}
