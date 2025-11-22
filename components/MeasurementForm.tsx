@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import type { MeasurementEntry } from '../types';
 
 interface MeasurementFormProps {
-    onAddEntry: (entry: Omit<MeasurementEntry, 'id' | 'user_id'>) => void;
+    onAddEntry: (entry: Omit<MeasurementEntry, 'id' | 'user_id'>) => Promise<boolean>;
     measurementUnit: 'cm' | 'in';
 }
 
@@ -13,17 +13,17 @@ export const MeasurementForm: React.FC<MeasurementFormProps> = ({ onAddEntry, me
     const [waist, setWaist] = useState('');
     const [hips, setHips] = useState('');
     const [chest, setChest] = useState('');
-    const [rightArm, setRightArm] = useState('');
-    const [leftArm, setLeftArm] = useState('');
-    const [rightLeg, setRightLeg] = useState('');
-    const [leftLeg, setLeftLeg] = useState('');
+    const [bicep, setBicep] = useState('');
+    const [thigh, setThigh] = useState('');
+    const [shoulders, setShoulders] = useState('');
+    const [calves, setCalves] = useState('');
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const toCm = (val: string) => {
+        const toCm = (val: string): number | null => {
             const num = parseFloat(val);
-            if (isNaN(num) || num <= 0) return undefined;
+            if (isNaN(num) || num <= 0) return null;
             return measurementUnit === 'in' ? num * 2.54 : num;
         };
 
@@ -32,22 +32,24 @@ export const MeasurementForm: React.FC<MeasurementFormProps> = ({ onAddEntry, me
             waist: toCm(waist),
             hips: toCm(hips),
             chest: toCm(chest),
-            right_arm: toCm(rightArm),
-            left_arm: toCm(leftArm),
-            right_leg: toCm(rightLeg),
-            left_leg: toCm(leftLeg),
+            bicep: toCm(bicep),
+            thigh: toCm(thigh),
+            shoulders: toCm(shoulders),
+            calves: toCm(calves),
         };
         
         // Only submit if at least one measurement is entered
         if (Object.values(newEntry).some(v => typeof v === 'number')) {
-            onAddEntry(newEntry);
-            setWaist('');
-            setHips('');
-            setChest('');
-            setRightArm('');
-            setLeftArm('');
-            setRightLeg('');
-            setLeftLeg('');
+            const success = await onAddEntry(newEntry);
+            if (success) {
+                setWaist('');
+                setHips('');
+                setChest('');
+                setBicep('');
+                setThigh('');
+                setShoulders('');
+                setCalves('');
+            }
         }
     };
     
@@ -96,10 +98,10 @@ export const MeasurementForm: React.FC<MeasurementFormProps> = ({ onAddEntry, me
                     {renderInput('measurementForm.chestLabel', chest, setChest)}
                 </div>
                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    {renderInput('measurementForm.rightArmLabel', rightArm, setRightArm)}
-                    {renderInput('measurementForm.leftArmLabel', leftArm, setLeftArm)}
-                    {renderInput('measurementForm.rightLegLabel', rightLeg, setRightLeg)}
-                    {renderInput('measurementForm.leftLegLabel', leftLeg, setLeftLeg)}
+                    {renderInput('measurementForm.shouldersLabel', shoulders, setShoulders)}
+                    {renderInput('measurementForm.calvesLabel', calves, setCalves)}
+                    {renderInput('measurementForm.bicepLabel', bicep, setBicep)}
+                    {renderInput('measurementForm.thighLabel', thigh, setThigh)}
                 </div>
                 <button type="submit" className="w-full bg-secondary text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary transition-colors duration-300">
                     {t('measurementForm.saveButton')}

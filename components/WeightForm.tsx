@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface WeightFormProps {
-    onAddEntry: (weightInKg: number, date: string) => void;
+    onAddEntry: (weightInKg: number, date: string) => Promise<boolean>;
     weightUnit: 'kg' | 'lbs';
 }
 
@@ -11,13 +11,15 @@ export const WeightForm: React.FC<WeightFormProps> = ({ onAddEntry, weightUnit }
     const [weight, setWeight] = useState('');
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const weightValue = parseFloat(weight);
         if (!isNaN(weightValue) && weightValue > 0 && date) {
             const weightInKg = weightUnit === 'lbs' ? weightValue / 2.20462 : weightValue;
-            onAddEntry(weightInKg, date);
-            setWeight('');
+            const success = await onAddEntry(weightInKg, date);
+            if (success) {
+                setWeight('');
+            }
         } else {
             alert(t('weightForm.validationError'));
         }

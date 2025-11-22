@@ -1,14 +1,25 @@
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-// IMPORTANT: Replace with your actual Supabase URL and Anon Key from your project settings.
-// It is recommended to use environment variables for these in a real production app.
-export const supabaseUrl = 'https://onkwfruejsifzolsnhve.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9ua3dmcnVlanNpZnpvbHNuaHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MDcyODQsImV4cCI6MjA3NzA4MzI4NH0.67qNZISl0TEIgdgzba-qWq7j9yGUVVYF17xKsCvb8DU'
+// --- Supabase Credentials ---
+// The following credentials have been hardcoded to resolve the setup issue.
+// For production environments, it is strongly recommended to use environment variables 
+// to ensure your keys are not exposed in the client-side code.
+export const supabaseUrl: string | undefined = 'https://onkwfruejsifzolsnhve.supabase.co';
+const supabaseAnonKey: string | undefined = 'sb_publishable_2CJJm-cjT2JLnj5P1nstMA_u9a78sUp'; // This is the public 'anon' key
 
-// NOTE for PRODUCTION:
-// For the phone authentication to work with any number, the Supabase project
-// must be configured with a paid Twilio account. The trial account only allows
-// sending SMS to pre-verified numbers. This configuration is done in the
-// Supabase dashboard under Authentication -> Providers -> Phone.
+let supabase: SupabaseClient | null = null;
+let supabaseError: string | null = null;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+if (!supabaseUrl || !supabaseAnonKey) {
+  // This case should not be reached with hardcoded values, but serves as a safeguard.
+  supabaseError = 'Supabase URL or Anon Key is missing in the configuration.';
+} else {
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  } catch (e: any) {
+    supabaseError = `Failed to initialize Supabase client: ${e.message}`;
+  }
+}
+
+export { supabase, supabaseError };

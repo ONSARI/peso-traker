@@ -53,10 +53,10 @@ export const AICoach: React.FC<AICoachProps> = ({ profile, weightEntries, measur
                     e.waist && `Waist: ${e.waist.toFixed(1)} cm`,
                     e.hips && `Hips: ${e.hips.toFixed(1)} cm`,
                     e.chest && `Chest: ${e.chest.toFixed(1)} cm`,
-                    e.right_arm && `Right Bicep: ${e.right_arm.toFixed(1)} cm`,
-                    e.left_arm && `Left Bicep: ${e.left_arm.toFixed(1)} cm`,
-                    e.right_leg && `Right Quad: ${e.right_leg.toFixed(1)} cm`,
-                    e.left_leg && `Left Quad: ${e.left_leg.toFixed(1)} cm`,
+                    e.shoulders && `Shoulders: ${e.shoulders.toFixed(1)} cm`,
+                    e.bicep && `Bicep: ${e.bicep.toFixed(1)} cm`,
+                    e.thigh && `Thigh: ${e.thigh.toFixed(1)} cm`,
+                    e.calves && `Calves: ${e.calves.toFixed(1)} cm`,
                 ].filter(Boolean).join(', ');
                 return `  - ${e.date}: ${parts}`;
             }).join('\n');

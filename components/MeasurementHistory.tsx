@@ -1,14 +1,16 @@
 import React from 'react';
 import type { MeasurementEntry } from '../types';
 import { useTranslation } from 'react-i18next';
+import { PencilIcon } from './icons';
 
 interface MeasurementHistoryProps {
     entries: MeasurementEntry[];
     onDeleteEntry: (id: number) => void;
+    onEditEntry: (entry: MeasurementEntry) => void;
     measurementUnit: 'cm' | 'in';
 }
 
-export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({ entries, onDeleteEntry, measurementUnit }) => {
+export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({ entries, onDeleteEntry, onEditEntry, measurementUnit }) => {
     const { t, i18n } = useTranslation();
     const reversedEntries = [...entries].reverse();
 
@@ -34,10 +36,10 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({ entries,
                             <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.waistHeader')}</th>
                             <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.hipsHeader')}</th>
                             <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.chestHeader')}</th>
-                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.rightArmHeader')}</th>
-                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.leftArmHeader')}</th>
-                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.rightLegHeader')}</th>
-                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.leftLegHeader')}</th>
+                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.shouldersHeader')}</th>
+                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.calvesHeader')}</th>
+                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.bicepHeader')}</th>
+                            <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.thighHeader')}</th>
                             <th className="p-3 text-sm font-semibold text-text-secondary dark:text-gray-300 tracking-wider text-center">{t('measurementHistory.actionsHeader')}</th>
                         </tr>
                     </thead>
@@ -50,11 +52,18 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({ entries,
                                 <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.waist)}</td>
                                 <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.hips)}</td>
                                 <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.chest)}</td>
-                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.right_arm)}</td>
-                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.left_arm)}</td>
-                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.right_leg)}</td>
-                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.left_leg)}</td>
+                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.shoulders)}</td>
+                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.calves)}</td>
+                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.bicep)}</td>
+                                <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-center">{displayValue(entry.thigh)}</td>
                                 <td className="p-3 whitespace-nowrap text-center">
+                                    <button
+                                        onClick={() => onEditEntry(entry)}
+                                        className="text-secondary hover:text-primary p-1 rounded-full mr-2"
+                                        aria-label={t('history.editLabel')}
+                                    >
+                                        <PencilIcon className="h-5 w-5" />
+                                    </button>
                                     <button
                                         onClick={() => onDeleteEntry(entry.id)}
                                         className="text-red-500 hover:text-red-700 p-1 rounded-full"

@@ -160,7 +160,7 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
     const activeGoalInfo = useMemo(() => {
         if (!latestWeight || !startWeight) return null;
 
-        const isLosing = (goal_weight_final || goal_weight_1 || 0) < startWeight;
+        const isLosing = (goal_weight_final || goal_weight_2 || goal_weight_1 || 0) < startWeight;
     
         const goals: { key: keyof UserProfile; value: number | null | undefined; label: string; start: number | null | undefined; }[] = [
             { key: 'goal_weight_1', value: goal_weight_1, label: t('bmiCard.goals.goal1'), start: startWeight },
@@ -174,15 +174,13 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
                 if (!isGoalReached) {
                     return { ...goal, isAchieved: false };
                 }
-            } else {
-                // Return the first unset goal as the active one to be set
-                return { ...goal, isAchieved: false };
-            }
+            } 
         }
 
-        // If all goals are set and reached
-        if (goal_weight_final) {
-            return { ...goals[2], isAchieved: true };
+        // If all set goals are reached
+        const lastSetGoal = [...goals].reverse().find(g => g.value);
+        if (lastSetGoal) {
+             return { ...lastSetGoal, isAchieved: true };
         }
 
         return null;
@@ -417,52 +415,67 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
                     {schemaNeedsFix ? (
                         <InlineSchemaFixGuide projectRef={projectRef} />
                     ) : (
-                    <>
-                        {goals.map((goal, index) => {
+                    <div className="space-y-3 pt-2">
+                        {goals.map((goal) => {
+                            // Don't render if goal is not set AND we are not trying to edit/add it
+                            if (!goal.value && editingGoalKey !== goal.key) {
+                                return null;
+                            }
+
                             const isAchieved = latestWeight && goal.value && ((startWeight || 0) > goal.value ? latestWeight <= goal.value : latestWeight >= goal.value);
                             const isActive = activeGoalInfo?.key === goal.key;
                             const isEditingThis = editingGoalKey === goal.key;
 
                             return (
-                                <React.Fragment key={goal.key}>
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex flex-col items-center">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${isAchieved ? 'bg-green-500' : isActive ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}>
-                                                {isAchieved ? '✓' : isActive ? '🎯' : '🏁'}
-                                            </div>
-                                        </div>
-                                        <div className="flex-grow">
-                                            <div className="text-sm font-semibold text-text-secondary dark:text-gray-400">{goal.label}</div>
-                                            {isEditingThis ? (
-                                                <div className="flex items-center gap-2">
-                                                    <input type="number" step="0.1" value={goalWeightInput} onChange={(e) => setGoalWeightInput(e.target.value)} className="w-24 px-2 py-1 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" autoFocus onKeyDown={(e) => e.key === 'Enter' && handleGoalSave()} />
-                                                    <span className="text-text-secondary dark:text-gray-400">{weightUnit}</span>
-                                                    <button onClick={handleGoalSave} className="text-green-500 hover:text-green-700">✓</button>
-                                                    <button onClick={() => setEditingGoalKey(null)} className="text-red-500 hover:text-red-700">×</button>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-2">
-                                                    {goal.value ? (
-                                                        <span className="text-lg font-bold text-text-primary dark:text-gray-200">{displayWeight(goal.value)}</span>
-                                                    ) : null}
-                                                    <button onClick={() => handleEditGoal(goal.key, goal.value)} className="text-text-secondary dark:text-gray-400 hover:text-primary">
-                                                        {goal.value ? t('bmiCard.goals.edit') : t('bmiCard.goals.set')}
-                                                    </button>
-                                                </div>
-                                            )}
+                                <div key={goal.key} className="flex items-center gap-4">
+                                    <div className="flex flex-col items-center">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${isAchieved ? 'bg-green-500' : isActive && !isEditingThis ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}>
+                                            {isAchieved ? '✓' : isActive && !isEditingThis ? '🎯' : '🏁'}
                                         </div>
                                     </div>
-                                    {index < goals.length - 1 && (
-                                        <div className="h-6 w-8 flex justify-center">
-                                            <div className="border-l-2 border-dashed border-gray-300 dark:border-gray-600 h-full"></div>
-                                        </div>
-                                    )}
-                                </React.Fragment>
-                            )
+                                    <div className="flex-grow">
+                                        <div className="text-sm font-semibold text-text-secondary dark:text-gray-400">{goal.label}</div>
+                                        {isEditingThis ? (
+                                            <div className="flex items-center gap-2">
+                                                <input type="number" step="0.1" value={goalWeightInput} onChange={(e) => setGoalWeightInput(e.target.value)} className="w-24 px-2 py-1 border border-gray-300 rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" autoFocus onKeyDown={(e) => e.key === 'Enter' && handleGoalSave()} />
+                                                <span className="text-text-secondary dark:text-gray-400">{weightUnit}</span>
+                                                <button onClick={handleGoalSave} className="text-green-500 hover:text-green-700">✓</button>
+                                                <button onClick={() => setEditingGoalKey(null)} className="text-red-500 hover:text-red-700">×</button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                {/* Value is checked to be non-null */}
+                                                <span className="text-lg font-bold text-text-primary dark:text-gray-200">{displayWeight(goal.value)}</span>
+                                                <button onClick={() => handleEditGoal(goal.key, goal.value)} className="text-sm text-text-secondary dark:text-gray-400 hover:text-primary">
+                                                    {t('bmiCard.goals.edit')}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
                         })}
 
+                        {/* Add Goal Button */}
+                        {goals.filter(g => g.value != null).length < 3 && !editingGoalKey && (
+                            <div className="pt-2">
+                                <button
+                                    onClick={() => {
+                                        const nextGoal = goals.find(g => g.value == null);
+                                        if (nextGoal) {
+                                            handleEditGoal(nextGoal.key, null);
+                                        }
+                                    }}
+                                    className="w-full text-center py-2 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-text-secondary dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                                    {t('bmiCard.goals.addGoal')}
+                                </button>
+                            </div>
+                        )}
+
                         {weightToGo !== null && (
-                            <div className="text-center">
+                            <div className="text-center pt-2">
                                 <p className="text-text-secondary dark:text-gray-400">
                                     <span className="font-bold text-lg text-primary">{displayWeight(Math.abs(weightToGo))}</span> {t('bmiCard.goals.toGo')}
                                 </p>
@@ -470,9 +483,8 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
                         )}
                         
                         {activeGoalInfo?.isAchieved && (
-                            <p className="text-center font-semibold text-green-500">{t('bmiCard.goals.allGoalsReached')}</p>
+                            <p className="text-center font-semibold text-green-500 pt-2">{t('bmiCard.goals.allGoalsReached')}</p>
                         )}
-
 
                         {progressBarInfo && (
                              <GoalProgressBar
@@ -482,7 +494,7 @@ export const BMICard: React.FC<BMICardProps> = ({ profile, entries, onProfileUpd
                                 weightUnit={weightUnit}
                             />
                         )}
-                    </>
+                    </div>
                     )}
                 </div>
                 

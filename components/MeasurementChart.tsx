@@ -9,7 +9,7 @@ interface MeasurementChartProps {
     theme: 'light' | 'dark';
 }
 
-type MeasurableField = 'waist' | 'hips' | 'chest' | 'right_arm' | 'left_arm' | 'right_leg' | 'left_leg';
+type MeasurableField = 'waist' | 'hips' | 'chest' | 'bicep' | 'thigh' | 'shoulders' | 'calves';
 
 export const MeasurementChart: React.FC<MeasurementChartProps> = ({ data, measurementUnit, theme }) => {
     const { t, i18n } = useTranslation();
@@ -45,15 +45,15 @@ export const MeasurementChart: React.FC<MeasurementChartProps> = ({ data, measur
         waist: '#8884d8',
         hips: '#82ca9d',
         chest: '#ffc658',
-        right_arm: '#ff8042',
-        left_arm: '#0088FE',
-        right_leg: '#00C49F',
-        left_leg: '#FFBB28',
+        bicep: '#ff8042',
+        thigh: '#0088FE',
+        shoulders: '#00C49F',
+        calves: '#FFBB28',
     };
     const chartColor = colors[activeChart];
     const chartName = t(`charts.${activeChart}`);
     const yAxisLabel = `${chartName} (${measurementUnit})`;
-    const fields: MeasurableField[] = ['waist', 'hips', 'chest', 'right_arm', 'left_arm', 'right_leg', 'left_leg'];
+    const fields: MeasurableField[] = ['waist', 'hips', 'chest', 'bicep', 'thigh', 'shoulders', 'calves'];
 
     return (
         <>

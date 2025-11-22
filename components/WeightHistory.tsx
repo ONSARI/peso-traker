@@ -1,14 +1,16 @@
 import React from 'react';
 import type { WeightEntry } from '../types';
 import { useTranslation } from 'react-i18next';
+import { PencilIcon } from './icons';
 
 interface WeightHistoryProps {
     entries: WeightEntry[];
     onDeleteEntry: (id: number) => void;
+    onEditEntry: (entry: WeightEntry) => void;
     weightUnit: 'kg' | 'lbs';
 }
 
-export const WeightHistory: React.FC<WeightHistoryProps> = ({ entries, onDeleteEntry, weightUnit }) => {
+export const WeightHistory: React.FC<WeightHistoryProps> = ({ entries, onDeleteEntry, onEditEntry, weightUnit }) => {
     const { t, i18n } = useTranslation();
     const reversedEntries = [...entries].reverse();
 
@@ -41,6 +43,13 @@ export const WeightHistory: React.FC<WeightHistoryProps> = ({ entries, onDeleteE
                                     </td>
                                     <td className="p-3 whitespace-nowrap text-text-primary dark:text-gray-200 text-right rtl:text-left">{displayWeight} {weightUnit}</td>
                                     <td className="p-3 whitespace-nowrap text-center">
+                                         <button
+                                            onClick={() => onEditEntry(entry)}
+                                            className="text-secondary hover:text-primary p-1 rounded-full mr-2"
+                                            aria-label={t('history.editLabel')}
+                                        >
+                                            <PencilIcon className="h-5 w-5" />
+                                        </button>
                                         <button
                                             onClick={() => onDeleteEntry(entry.id)}
                                             className="text-red-500 hover:text-red-700 p-1 rounded-full"
